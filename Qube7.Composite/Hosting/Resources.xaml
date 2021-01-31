@@ -1,0 +1,15 @@
+﻿<ResourceDictionary x:Class="Qube7.Composite.Hosting.Resources" x:ClassModifier="internal"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="clr-namespace:Qube7.Composite.Data"
+                    xmlns:p="clr-namespace:Qube7.Composite.Presentation">
+    <DataTemplate DataType="{x:Type p:ViewModel}">
+        <DataTemplate.Resources>
+            <DataTemplate DataType="{x:Type p:ViewModel}">
+                <TextBlock Text="{Binding}" />
+            </DataTemplate>
+            <d:ViewTemplateSelector x:Key="ViewTemplateSelector" />
+        </DataTemplate.Resources>
+        <ContentPresenter ContentTemplateSelector="{StaticResource ViewTemplateSelector}" />
+    </DataTemplate>
+</ResourceDictionary>

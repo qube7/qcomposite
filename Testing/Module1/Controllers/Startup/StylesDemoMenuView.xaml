@@ -1,0 +1,18 @@
+﻿<MenuItem x:Class="Module1.Controllers.Startup.StylesDemoMenuView"
+          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          xmlns:q="http://qube7.com/composite/xaml"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+          xmlns:local="clr-namespace:Module1.Controllers.Startup"
+          mc:Ignorable="d"
+          d:Class="{q:DesignClass local:StylesDemoMenuView}"
+          d:DataContext="{d:DesignInstance local:StylesDemoViewModel, IsDesignTimeCreatable=True}"
+          q:Grouping.GroupName="Demos"
+          q:Grouping.GroupIndex="10"
+          Header="{q:Resource Header}"
+          Command="{Binding Commands.Navigate}">
+    <MenuItem.Icon>
+        <Path Data="{DynamicResource Geometry.Logo}" />
+    </MenuItem.Icon>
+</MenuItem>

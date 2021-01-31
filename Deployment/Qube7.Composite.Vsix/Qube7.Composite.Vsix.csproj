@@ -1,0 +1,93 @@
+﻿<Project>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\QUBE7.snk</AssemblyOriginatorKeyFile>
+    <RootNamespace>Qube7.Composite.Design</RootNamespace>
+    <AssemblyName>Qube7.Composite.Design</AssemblyName>
+    <GeneratePkgDefFile>false</GeneratePkgDefFile>
+    <TargetVsixContainerName>QComposite.vsix</TargetVsixContainerName>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <CopyVsixManifestToOutput>false</CopyVsixManifestToOutput>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Icon.png" />
+    <None Remove="Package.pkgdef" />
+    <None Remove="ProjectTemplates\**\*" />
+    <None Remove="ItemTemplates\**\*" />
+    <None Remove="Snippets\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ProjectTemplates\**\*" />
+    <Compile Remove="ItemTemplates\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="ProjectTemplates\**\*" />
+    <EmbeddedResource Remove="ItemTemplates\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Icon.png">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\..\LICENSE.txt">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Package.pkgdef">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="ProjectTemplates\**\*">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="ItemTemplates\**\*">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>ItemTemplates\QComposite\%(RecursiveDir)</VSIXSubPath>
+    </Content>
+    <Content Include="Snippets\**\*">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>Snippets\QComposite\%(RecursiveDir)</VSIXSubPath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EnvDTE" Version="16.7.30508.193" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="16.7.30328.74" />
+    <PackageReference Include="VSSDK.TemplateWizardInterface" Version="12.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Strings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" />
+
+</Project>

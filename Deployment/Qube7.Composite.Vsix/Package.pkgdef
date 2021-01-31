@@ -1,0 +1,25 @@
+// Code Generators
+[$RootKey$\CLSID\{53E803B2-9AC4-4491-97BF-E514D5FC40B6}]
+@="QComposite: String Resources Generator for Partial Classes"
+"InprocServer32"="$WinDir$\SYSTEM32\MSCOREE.DLL"
+"Class"="Qube7.Composite.Design.Generators.PrivateResXFileCodeGenerator"
+"CodeBase"="$PackageFolder$\Qube7.Composite.Design.dll"
+"ThreadingModel"="Both"
+[$RootKey$\Generators\{FAE04EC1-301F-11D3-BF4B-00C04F79EFBC}\PrivateResXFileCodeGenerator]
+@="QComposite: String Resources Generator for Partial Classes"
+"CLSID"="{53E803B2-9AC4-4491-97BF-E514D5FC40B6}"
+"GeneratesDesignTimeSource"=dword:00000001
+[$RootKey$\CLSID\{8CCF7847-26C2-4D3D-BEEC-E163030FBBE8}]
+@="QComposite: ViewModel Conventions Code Generator"
+"InprocServer32"="$WinDir$\SYSTEM32\MSCOREE.DLL"
+"Class"="Qube7.Composite.Design.Generators.ViewModelCodeGenerator"
+"CodeBase"="$PackageFolder$\Qube7.Composite.Design.dll"
+"ThreadingModel"="Both"
+[$RootKey$\Generators\{FAE04EC1-301F-11D3-BF4B-00C04F79EFBC}\ViewModelCodeGenerator]
+@="QComposite: ViewModel Conventions Code Generator"
+"CLSID"="{8CCF7847-26C2-4D3D-BEEC-E163030FBBE8}"
+"GeneratesDesignTimeSource"=dword:00000001
+
+// Code Snippets
+[$RootKey$\Languages\CodeExpansions\CSharp\Paths]
+"QComposite"="$PackageFolder$\Snippets\QComposite"

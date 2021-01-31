@@ -1,0 +1,8 @@
+﻿<Project>
+
+  <PropertyGroup Condition="Exists('$(MSBuildThisFileDirectory)QUBE7.snk')">
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)QUBE7.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+</Project>

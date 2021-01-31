@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\QUBE7.snk</AssemblyOriginatorKeyFile>
+    <RootNamespace>Qube7.Composite</RootNamespace>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="SauceControl.InheritDoc" Version="1.1.1">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Qube7.Common\Qube7.Common.csproj" />
+    <ProjectReference Include="..\..\Qube7.Composite\Qube7.Composite.csproj" />
+  </ItemGroup>
+
+  <Target Name="ILRepack" AfterTargets="Build">
+    <ILRepack OutputType="$(OutputType)"
+              MainAssembly="Qube7.Composite.dll"
+              OutputAssembly="Qube7.Composite.dll"
+              InputAssemblies="$(OutputPath)\*.dll"
+              WilcardInputAssemblies="true"
+              WorkingDirectory="$(OutputPath)"
+              KeyFile="$(AssemblyOriginatorKeyFile)"
+              Internalize="false"
+              XmlDocumentation="true" />
+  </Target>
+
+  <Target Name="InheritDoc" AfterTargets="ILRepack">
+    <InheritDocTask AssemblyPath="$(OutputPath)\Qube7.Composite.dll"
+                    InDocPath="$(OutputPath)\Qube7.Composite.xml"
+                    OutDocPath="$(OutputPath)\Qube7.Composite.xml"
+                    RefAssemblyPaths="@(_ResolveAssemblyReferenceResolvedFiles)" />
+  </Target>
+
+</Project>

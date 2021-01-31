@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>property-calculated</Title>
+      <Shortcut>q_observable_property_calculated</Shortcut>
+      <Description>Code snippet for calculated property in the ObservableObject-derived class</Description>
+      <Author>QUBE7</Author>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <ID>type</ID>
+          <ToolTip>The type of the property</ToolTip>
+          <Default>string</Default>
+        </Literal>
+        <Literal>
+          <ID>property</ID>
+          <ToolTip>The name of the property</ToolTip>
+          <Default>MyProperty</Default>
+        </Literal>
+        <Literal>
+          <ID>other</ID>
+          <ToolTip>The name of the property that current property depends on</ToolTip>
+          <Default>OtherProperty</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp">
+        <![CDATA[[DependsOn(nameof($other$))]
+public $type$ $property$
+{
+get {return $other$;}
+}
+$end$]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

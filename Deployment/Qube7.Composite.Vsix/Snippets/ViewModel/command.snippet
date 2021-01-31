@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>command</Title>
+      <Shortcut>q_viewmodel_command</Shortcut>
+      <Description>Code snippet for command methods in the ViewModel-derived class</Description>
+      <Author>QUBE7</Author>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <ID>name</ID>
+          <ToolTip>The name of the command</ToolTip>
+          <Default>Name</Default>
+        </Literal>
+        <Literal>
+          <ID>type</ID>
+          <ToolTip>The type of the data parameter of the command</ToolTip>
+          <Default>object</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp">
+        <![CDATA[private void Execute$name$Command($type$ parameter)
+{
+}
+
+private bool CanExecute$name$Command($type$ parameter)
+{
+return true;
+}
+$end$]]>
+      </Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
