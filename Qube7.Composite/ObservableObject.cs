@@ -110,7 +110,7 @@ namespace Qube7.Composite
         /// Indicates that the attributed property is dependent on the value of another property.
         /// </summary>
         [AttributeUsage(AttributeTargets.Property, Inherited = false)]
-        protected sealed class DependsOn : Attribute, IDependsOn
+        protected sealed class DependsOnAttribute : Attribute, IDependsOn
         {
             #region Fields
 
@@ -124,7 +124,7 @@ namespace Qube7.Composite
             #region Properties
 
             /// <summary>
-            /// Gets the names of the related properties declared in this <see cref="DependsOn"/>.
+            /// Gets the names of the related properties declared in this <see cref="DependsOnAttribute"/>.
             /// </summary>
             /// <value>The names of the related properties.</value>
             public string[] Properties
@@ -137,10 +137,10 @@ namespace Qube7.Composite
             #region Constructors
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="DependsOn"/> class.
+            /// Initializes a new instance of the <see cref="DependsOnAttribute"/> class.
             /// </summary>
-            /// <param name="properties">The names of the properties that the property associated with this <see cref="DependsOn"/> depends on.</param>
-            public DependsOn(params string[] properties)
+            /// <param name="properties">The names of the properties that the property associated with this <see cref="DependsOnAttribute"/> depends on.</param>
+            public DependsOnAttribute(params string[] properties)
             {
                 this.properties = properties ?? Array.Empty<string>();
             }
@@ -293,7 +293,7 @@ namespace Qube7.Composite
             #region Nested types
 
             /// <summary>
-            /// Represents the property <see cref="DependsOn"/> association.
+            /// Represents the property <see cref="IDependsOn"/> association.
             /// </summary>
             private class Entry : List<Entry>
             {

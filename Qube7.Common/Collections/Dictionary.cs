@@ -6,7 +6,7 @@ namespace Qube7.Collections
     /// <summary>
     /// Provides helpers for the <see cref="IDictionary{TKey, TValue}"/>.
     /// </summary>
-    public static class DictionaryHelper
+    public static class Dictionary
     {
         #region Methods
 

@@ -19,7 +19,7 @@
     <ProjectItem ReplaceParameters="true" CustomTool="PrivateResXFileCodeGenerator" DependentUpon="." TargetFileName="$fileinputname$.resx">ViewModel.resx</ProjectItem>
   </TemplateContent>
   <WizardExtension>
-    <Assembly>Qube7.Composite.Design, Version=2.1.0.0, Culture=neutral, PublicKeyToken=104de0b32659fb49</Assembly>
+    <Assembly>Qube7.Composite.Design, Version=2.1.1.0, Culture=neutral, PublicKeyToken=104de0b32659fb49</Assembly>
     <FullClassName>Qube7.Composite.Design.Wizards.ViewModel</FullClassName>
   </WizardExtension>
 </VSTemplate>

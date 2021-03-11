@@ -115,10 +115,10 @@ namespace Qube7.Composite.Converters
         }
 
         /// <summary>
-        /// Gets the value of the <see cref="P:GroupName"/> attached property for a specified <see cref="DependencyObject"/>.
+        /// Gets the name of the group that specified <see cref="DependencyObject"/> should appear in.
         /// </summary>
-        /// <param name="element">The element from which the property value is read.</param>
-        /// <returns>The <see cref="P:GroupName"/> property value for the <paramref name="element"/>.</returns>
+        /// <param name="element">The element for which to get the group name.</param>
+        /// <returns>The name of the group for the <paramref name="element"/>.</returns>
         public static string GetGroupName(DependencyObject element)
         {
             Requires.NotNull(element, nameof(element));
@@ -127,10 +127,10 @@ namespace Qube7.Composite.Converters
         }
 
         /// <summary>
-        /// Sets the value of the <see cref="P:GroupName"/> attached property to a specified <see cref="DependencyObject"/>.
+        /// Sets the name of the group that specified <see cref="DependencyObject"/> should appear in.
         /// </summary>
-        /// <param name="element">The element to which the property value is written.</param>
-        /// <param name="value">The <see cref="P:GroupName"/> property value to set.</param>
+        /// <param name="element">The element for which to set the group name.</param>
+        /// <param name="value">The name of the group for the <paramref name="element"/>.</param>
         public static void SetGroupName(DependencyObject element, string value)
         {
             Requires.NotNull(element, nameof(element));
@@ -139,10 +139,10 @@ namespace Qube7.Composite.Converters
         }
 
         /// <summary>
-        /// Gets the value of the <see cref="P:GroupIndex"/> attached property for a specified <see cref="DependencyObject"/>.
+        /// Gets the position within a group at which the specified <see cref="DependencyObject"/> should appear.
         /// </summary>
-        /// <param name="element">The element from which the property value is read.</param>
-        /// <returns>The <see cref="P:GroupIndex"/> property value for the <paramref name="element"/>.</returns>
+        /// <param name="element">The element for which to get the position within a group.</param>
+        /// <returns>The position within a group of the <paramref name="element"/>.</returns>
         public static int GetGroupIndex(DependencyObject element)
         {
             Requires.NotNull(element, nameof(element));
@@ -151,10 +151,10 @@ namespace Qube7.Composite.Converters
         }
 
         /// <summary>
-        /// Sets the value of the <see cref="P:GroupIndex"/> attached property to a specified <see cref="DependencyObject"/>.
+        /// Sets the position within a group at which the specified <see cref="DependencyObject"/> should appear.
         /// </summary>
-        /// <param name="element">The element to which the property value is written.</param>
-        /// <param name="value">The <see cref="P:GroupIndex"/> property value to set.</param>
+        /// <param name="element">The element for which to set the position within a group.</param>
+        /// <param name="value">The position within a group of the <paramref name="element"/>.</param>
         public static void SetGroupIndex(DependencyObject element, int value)
         {
             Requires.NotNull(element, nameof(element));

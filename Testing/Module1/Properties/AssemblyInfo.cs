@@ -11,7 +11,7 @@ using Qube7.Composite.Hosting;
 
 [assembly: AssemblyModule(typeof(AppModule))]
 
-[assembly: AssemblyVersion("2.1.0.0")]
-[assembly: AssemblyFileVersion("2.1.0.0")]
+[assembly: AssemblyVersion("2.1.1.0")]
+[assembly: AssemblyFileVersion("2.1.1.0")]
 
 [assembly: NeutralResourcesLanguage("en")]

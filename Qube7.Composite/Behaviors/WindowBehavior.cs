@@ -20,22 +20,22 @@ namespace Qube7.Composite.Behaviors
         /// <summary>
         /// The minimize window command binding.
         /// </summary>
-        private static readonly CommandBinding minimize = new CommandBinding(SystemCommands.MinimizeWindowCommand, OnMinimizeExecuted, OnMinimizeCanExecute);
+        private static readonly CommandBinding minimize = new CommandBinding(SystemCommands.MinimizeWindowCommand, OnMinimizeWindowExecuted, OnMinimizeWindowCanExecute);
 
         /// <summary>
         /// The maximize window command binding.
         /// </summary>
-        private static readonly CommandBinding maximize = new CommandBinding(SystemCommands.MaximizeWindowCommand, OnMaximizeExecuted, OnMaximizeCanExecute);
+        private static readonly CommandBinding maximize = new CommandBinding(SystemCommands.MaximizeWindowCommand, OnMaximizeWindowExecuted, OnMaximizeWindowCanExecute);
 
         /// <summary>
         /// The restore window command binding.
         /// </summary>
-        private static readonly CommandBinding restore = new CommandBinding(SystemCommands.RestoreWindowCommand, OnRestoreExecuted, OnRestoreCanExecute);
+        private static readonly CommandBinding restore = new CommandBinding(SystemCommands.RestoreWindowCommand, OnRestoreWindowExecuted, OnRestoreWindowCanExecute);
 
         /// <summary>
         /// The close window command binding.
         /// </summary>
-        private static readonly CommandBinding close = new CommandBinding(SystemCommands.CloseWindowCommand, OnCloseExecuted);
+        private static readonly CommandBinding close = new CommandBinding(SystemCommands.CloseWindowCommand, OnCloseWindowExecuted);
 
         #endregion
 
@@ -75,8 +75,8 @@ namespace Qube7.Composite.Behaviors
                         bindings.Add(close);
                     }
 
-                    window.StateChanged -= OnStateChanged;
-                    window.StateChanged += OnStateChanged;
+                    window.StateChanged -= OnWindowStateChanged;
+                    window.StateChanged += OnWindowStateChanged;
 
                     return;
                 }
@@ -89,15 +89,15 @@ namespace Qube7.Composite.Behaviors
 
                 bindings.Remove(close);
 
-                window.StateChanged -= OnStateChanged;
+                window.StateChanged -= OnWindowStateChanged;
             }
         }
 
         /// <summary>
-        /// Gets the value of the <see cref="P:HandleWindowCommands"/> attached property for a specified <see cref="Window"/>.
+        /// Gets a value indicating whether to handle <see cref="SystemCommands.MinimizeWindowCommand"/>, <see cref="SystemCommands.MaximizeWindowCommand"/>, <see cref="SystemCommands.RestoreWindowCommand"/> and <see cref="SystemCommands.CloseWindowCommand"/> for the specified <see cref="Window"/>.
         /// </summary>
-        /// <param name="window">The <see cref="Window"/> from which the property value is read.</param>
-        /// <returns>The <see cref="P:HandleWindowCommands"/> property value for the <paramref name="window"/>.</returns>
+        /// <param name="window">The <see cref="Window"/> for which to get whether to handle commands.</param>
+        /// <returns><c>true</c> if to handle commands for the <paramref name="window"/>; otherwise, <c>false</c>.</returns>
         public static bool GetHandleWindowCommands(Window window)
         {
             Requires.NotNull(window, nameof(window));
@@ -106,10 +106,10 @@ namespace Qube7.Composite.Behaviors
         }
 
         /// <summary>
-        /// Sets the value of the <see cref="P:HandleWindowCommands"/> attached property to a specified <see cref="Window"/>.
+        /// Sets a value indicating whether to handle <see cref="SystemCommands.MinimizeWindowCommand"/>, <see cref="SystemCommands.MaximizeWindowCommand"/>, <see cref="SystemCommands.RestoreWindowCommand"/> and <see cref="SystemCommands.CloseWindowCommand"/> for the specified <see cref="Window"/>.
         /// </summary>
-        /// <param name="window">The <see cref="Window"/> to which the property value is written.</param>
-        /// <param name="value">The <see cref="P:HandleWindowCommands"/> property value to set.</param>
+        /// <param name="window">The <see cref="Window"/> for which to set whether to handle commands.</param>
+        /// <param name="value"><c>true</c> if to handle commands for the <paramref name="window"/>; otherwise, <c>false</c>.</param>
         public static void SetHandleWindowCommands(Window window, bool value)
         {
             Requires.NotNull(window, nameof(window));
@@ -122,7 +122,7 @@ namespace Qube7.Composite.Behaviors
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="CanExecuteRoutedEventArgs"/> that contains the event data.</param>
-        private static void OnMinimizeCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private static void OnMinimizeWindowCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             Window window = sender as Window;
 
@@ -134,7 +134,7 @@ namespace Qube7.Composite.Behaviors
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="ExecutedRoutedEventArgs"/> that contains the event data.</param>
-        private static void OnMinimizeExecuted(object sender, ExecutedRoutedEventArgs e)
+        private static void OnMinimizeWindowExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             Window window = sender as Window;
             if (window != null)
@@ -150,7 +150,7 @@ namespace Qube7.Composite.Behaviors
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="CanExecuteRoutedEventArgs"/> that contains the event data.</param>
-        private static void OnMaximizeCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private static void OnMaximizeWindowCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             Window window = sender as Window;
 
@@ -162,7 +162,7 @@ namespace Qube7.Composite.Behaviors
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="ExecutedRoutedEventArgs"/> that contains the event data.</param>
-        private static void OnMaximizeExecuted(object sender, ExecutedRoutedEventArgs e)
+        private static void OnMaximizeWindowExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             Window window = sender as Window;
             if (window != null)
@@ -178,7 +178,7 @@ namespace Qube7.Composite.Behaviors
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="CanExecuteRoutedEventArgs"/> that contains the event data.</param>
-        private static void OnRestoreCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private static void OnRestoreWindowCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             Window window = sender as Window;
 
@@ -190,7 +190,7 @@ namespace Qube7.Composite.Behaviors
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="ExecutedRoutedEventArgs"/> that contains the event data.</param>
-        private static void OnRestoreExecuted(object sender, ExecutedRoutedEventArgs e)
+        private static void OnRestoreWindowExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             Window window = sender as Window;
             if (window != null)
@@ -206,7 +206,7 @@ namespace Qube7.Composite.Behaviors
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="ExecutedRoutedEventArgs"/> that contains the event data.</param>
-        private static void OnCloseExecuted(object sender, ExecutedRoutedEventArgs e)
+        private static void OnCloseWindowExecuted(object sender, ExecutedRoutedEventArgs e)
         {
             Window window = sender as Window;
             if (window != null)
@@ -222,7 +222,7 @@ namespace Qube7.Composite.Behaviors
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
-        private static void OnStateChanged(object sender, EventArgs e)
+        private static void OnWindowStateChanged(object sender, EventArgs e)
         {
             CommandManager.InvalidateRequerySuggested();
         }

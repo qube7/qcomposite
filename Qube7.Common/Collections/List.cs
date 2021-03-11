@@ -5,7 +5,7 @@ namespace Qube7.Collections
     /// <summary>
     /// Provides helpers for the <see cref="IList{T}"/>.
     /// </summary>
-    public static class ListHelper
+    public static class List
     {
         #region Methods
 

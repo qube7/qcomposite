@@ -51,10 +51,10 @@ namespace Qube7.Composite.Behaviors
         }
 
         /// <summary>
-        /// Gets the value of the <see cref="P:Source"/> attached property for a specified <see cref="ToolBarTray"/>.
+        /// Gets a collection used to populate the content of the specified <see cref="ToolBarTray"/>.
         /// </summary>
-        /// <param name="tray">The <see cref="ToolBarTray"/> from which the property value is read.</param>
-        /// <returns>The <see cref="P:Source"/> property value for the <paramref name="tray"/>.</returns>
+        /// <param name="tray">The <see cref="ToolBarTray"/> for which to get the collection.</param>
+        /// <returns>A collection that is used to populate the content of the <paramref name="tray"/>.</returns>
         public static IEnumerable GetSource(ToolBarTray tray)
         {
             Requires.NotNull(tray, nameof(tray));
@@ -63,10 +63,10 @@ namespace Qube7.Composite.Behaviors
         }
 
         /// <summary>
-        /// Sets the value of the <see cref="P:Source"/> attached property to a specified <see cref="ToolBarTray"/>.
+        /// Sets a collection used to populate the content of the specified <see cref="ToolBarTray"/>.
         /// </summary>
-        /// <param name="tray">The <see cref="ToolBarTray"/> to which the property value is written.</param>
-        /// <param name="value">The <see cref="P:Source"/> property value to set.</param>
+        /// <param name="tray">The <see cref="ToolBarTray"/> for which to set the collection.</param>
+        /// <param name="value">A collection to use to populate the content of the <paramref name="tray"/>.</param>
         public static void SetSource(ToolBarTray tray, IEnumerable value)
         {
             Requires.NotNull(tray, nameof(tray));

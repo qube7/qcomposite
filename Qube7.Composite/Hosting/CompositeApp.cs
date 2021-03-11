@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Primitives;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using Qube7.ComponentModel;
 using Qube7.Composite.Presentation;
@@ -108,28 +109,26 @@ namespace Qube7.Composite.Hosting
                     }
                 }
 
-                ParallelQuery<Module> query = modules.Prepend(null).AsParallel().WithMergeOptions(ParallelMergeOptions.NotBuffered).Select(Initialize);
+                List<Task<Module>> tasks = new List<Task<Module>>();
 
-                using (IEnumerator<Module> enumerator = query.GetEnumerator())
+                foreach (ModuleContext context in modules)
                 {
-                    enumerator.MoveNext();
+                    tasks.Add(Task.Run(() => Initialize(context)));
+                }
 
-                    Initialize(this);
+                Initialize(this);
 
-                    Module module = new AppModule(this);
+                AppModule module = new AppModule(this);
 
-                    Module.Execute(module);
+                Module.Execute(module);
 
-                    do
-                    {
-                        module = enumerator.Current;
+                while (tasks.Count > 0)
+                {
+                    int index = Task.WaitAny(tasks.ToArray());
 
-                        if (module != null)
-                        {
-                            Module.Execute(module);
-                        }
-                    }
-                    while (enumerator.MoveNext());
+                    Module.Execute(tasks[index].Result);
+
+                    tasks.RemoveAt(index);
                 }
             }
 
@@ -143,14 +142,9 @@ namespace Qube7.Composite.Hosting
         /// <returns>The associated module instance.</returns>
         private static Module Initialize(ModuleContext context)
         {
-            if (context != null)
-            {
-                Initializable.Initialize(context);
+            Initializable.Initialize(context);
 
-                return context.Module;
-            }
-
-            return null;
+            return context.Module;
         }
 
         /// <summary>

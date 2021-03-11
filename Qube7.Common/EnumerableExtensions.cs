@@ -6,9 +6,9 @@ using System.Linq;
 namespace Qube7
 {
     /// <summary>
-    /// Provides the helper extension methods.
+    /// Provides the <see cref="IEnumerable{T}"/> extension methods.
     /// </summary>
-    public static class Extensions
+    public static class EnumerableExtensions
     {
         #region Methods
 

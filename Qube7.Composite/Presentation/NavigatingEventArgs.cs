@@ -30,7 +30,7 @@ namespace Qube7.Composite.Presentation
         /// </summary>
         /// <param name="current">The current <see cref="ViewModel"/>.</param>
         /// <param name="target">The target <see cref="ViewModel"/>.</param>
-        /// <param name="canCancel">A value indicating whether the event can be canceled.</param>
+        /// <param name="canCancel"><c>true</c> if the event can be canceled; otherwise, <c>false</c>.</param>
         public NavigatingEventArgs(ViewModel current, ViewModel target, bool canCancel) : base(canCancel)
         {
             Current = current;

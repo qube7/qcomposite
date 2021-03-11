@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="Qube7.Composite" Version="2.1.0" Language="en-US" Publisher="QUBE7" />
+    <Identity Id="Qube7.Composite" Version="2.1.1" Language="en-US" Publisher="QUBE7" />
     <DisplayName>QComposite</DisplayName>
     <Description>Provides Visual Studio templates, code snippets, and generators for developing QComposite-based applications.</Description>
     <MoreInfo>https://www.qube7.com/</MoreInfo>

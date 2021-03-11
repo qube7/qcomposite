@@ -39,16 +39,16 @@ namespace Qube7.ComponentModel
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CancelableEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="CancelableEventArgs"/> class with the <see cref="CanCancel"/> property set to the given value.
         /// </summary>
-        /// <param name="canCancel">A value indicating whether the event can be canceled.</param>
+        /// <param name="canCancel"><c>true</c> if the event can be canceled; otherwise, <c>false</c>.</param>
         public CancelableEventArgs(bool canCancel)
         {
             CanCancel = canCancel;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CancelableEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="CancelableEventArgs"/> class with the <see cref="CanCancel"/> property set to <c>true</c>.
         /// </summary>
         public CancelableEventArgs() : this(true)
         {

@@ -3,6 +3,6 @@
                  xmlns:q="http://qube7.com/composite/xaml"
                  xmlns:local="clr-namespace:Application1">
     <q:StaticModule Type="{x:Type local:AppModule}" />
-    <q:AssemblyModule AssemblyName="Module1, Version=2.1.0.0, Culture=neutral, PublicKeyToken=null"
+    <q:AssemblyModule AssemblyName="Module1, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null"
                       AssemblyFile="..\..\..\..\Module1\bin\Debug\net5.0-windows\Module1.dll" />
 </q:ModuleCatalog>

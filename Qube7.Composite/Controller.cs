@@ -26,6 +26,11 @@ namespace Qube7.Composite
         public const string ExportScopeMetadataName = nameof(ExportScopeAttribute.ExportScope);
 
         /// <summary>
+        /// Specifies the metadata key created by the composition system to mark a method that requires the user interface thread.
+        /// </summary>
+        private const string RequiresUIThreadMetadataName = nameof(RequiresUIThreadAttribute.RequiresUIThread);
+
+        /// <summary>
         /// The event broker.
         /// </summary>
         private readonly EventBroker broker;
@@ -703,7 +708,7 @@ namespace Qube7.Composite
             }
 
             /// <summary>
-            /// Determines whether the calling thread has access to the <see cref="XContainer"/>.
+            /// Enforces that the calling thread has access to the <see cref="XContainer"/>.
             /// </summary>
             private static void VerifyAccess()
             {
@@ -727,11 +732,6 @@ namespace Qube7.Composite
                 internal static readonly Composable Instance = new Composable();
 
                 /// <summary>
-                /// The associated dispatcher.
-                /// </summary>
-                private static readonly Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
-
-                /// <summary>
                 /// The descendant containers.
                 /// </summary>
                 private readonly List<XContainer> containers = new List<XContainer>();
@@ -746,7 +746,7 @@ namespace Qube7.Composite
                 /// <value>The associated <see cref="System.Windows.Threading.Dispatcher"/>.</value>
                 internal static Dispatcher Dispatcher
                 {
-                    get { return dispatcher; }
+                    get { return UIThread.Dispatcher; }
                 }
 
                 #endregion
@@ -819,11 +819,11 @@ namespace Qube7.Composite
                 }
 
                 /// <summary>
-                /// Determines whether the calling thread has access to the <see cref="Composable"/>.
+                /// Enforces that the calling thread has access to the <see cref="Composable"/>.
                 /// </summary>
                 internal static void VerifyAccess()
                 {
-                    dispatcher.VerifyAccess();
+                    UIThread.VerifyAccess();
                 }
 
                 #endregion
@@ -1905,9 +1905,12 @@ namespace Qube7.Composite
             /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
             public void Raise<T>(string contractName, object sender, T e) where T : EventArgs
             {
-                ContractBasedImportDefinition definition = new ContractBasedImportDefinition(contractName, null, null, ImportCardinality.ZeroOrMore, false, false, CreationPolicy.Any);
+                ContractBasedImportDefinition definition = new ContractBasedImportDefinition(contractName, null, null, ImportCardinality.ZeroOrMore, false, false, CreationPolicy.Shared);
 
-                List<ExportedDelegate> list = new List<ExportedDelegate>();
+                bool dispatch = !UIThread.CheckAccess();
+
+                List<ExportedDelegate> list1 = null;
+                List<ExportedDelegate> list2 = null;
 
                 using (Sync.Read())
                 {
@@ -1915,25 +1918,76 @@ namespace Qube7.Composite
                     {
                         foreach (Export export in controller.container.root.GetExports(definition))
                         {
-                            ExportedDelegate value = export.Value as ExportedDelegate;
-                            if (value != null)
+                            ExportedDelegate exported = export.Value as ExportedDelegate;
+                            if (exported != null)
                             {
-                                list.Add(value);
+                                if (dispatch && export.Metadata.TryGetValue(RequiresUIThreadMetadataName, out object value) && value is bool && (bool)value)
+                                {
+                                    if (list2 == null)
+                                    {
+                                        list2 = new List<ExportedDelegate>();
+                                    }
+
+                                    list2.Add(exported);
+
+                                    continue;
+                                }
+
+                                if (list1 == null)
+                                {
+                                    list1 = new List<ExportedDelegate>();
+                                }
+
+                                list1.Add(exported);
                             }
                         }
                     }
                 }
 
-                if (list.Count > 0)
+                if (list1 != null)
                 {
-                    for (int i = 0; i < list.Count; i++)
+                    for (int i = 0; i < list1.Count; i++)
                     {
-                        Action<object, T> action = list[i].CreateDelegate(typeof(Delegate)) as Action<object, T>;
+                        Action<object, T> action = list1[i].CreateDelegate(typeof(Delegate)) as Action<object, T>;
                         if (action != null)
                         {
                             action(sender, e);
                         }
                     }
+                }
+
+                if (list2 != null)
+                {
+                    List<Action<object, T>> list = new List<Action<object, T>>();
+
+                    for (int i = 0; i < list2.Count; i++)
+                    {
+                        Action<object, T> action = list2[i].CreateDelegate(typeof(Delegate)) as Action<object, T>;
+                        if (action != null)
+                        {
+                            list.Add(action);
+                        }
+                    }
+
+                    if (list.Count > 0)
+                    {
+                        UIThread.Invoke(() => DeliverEvent(sender, e, list));
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Delivers the event to each subscription in the specified list.
+            /// </summary>
+            /// <typeparam name="T">The type of the event data.</typeparam>
+            /// <param name="sender">The source of the event.</param>
+            /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
+            /// <param name="list">The subscriptions that receive the event.</param>
+            private static void DeliverEvent<T>(object sender, T e, List<Action<object, T>> list) where T : EventArgs
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    list[i](sender, e);
                 }
             }
 

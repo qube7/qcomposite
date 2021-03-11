@@ -100,7 +100,7 @@ namespace Qube7.Composite.Presentation
         /// Defines the view template for a <see cref="ViewModel"/> derived class.
         /// </summary>
         [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-        protected sealed class View : Attribute
+        protected sealed class ViewAttribute : Attribute
         {
             #region Properties
 
@@ -121,21 +121,21 @@ namespace Qube7.Composite.Presentation
             #region Constructors
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="View"/> class.
+            /// Initializes a new instance of the <see cref="ViewAttribute"/> class.
             /// </summary>
             /// <param name="name">The name of the view template.</param>
             /// <param name="type">The type of the view control.</param>
-            public View(string name, Type type)
+            public ViewAttribute(string name, Type type)
             {
                 Name = name;
                 Type = type;
             }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="View"/> class.
+            /// Initializes a new instance of the <see cref="ViewAttribute"/> class.
             /// </summary>
             /// <param name="type">The type of the view control.</param>
-            public View(Type type) : this(null, type)
+            public ViewAttribute(Type type) : this(null, type)
             {
             }
 
@@ -244,7 +244,7 @@ namespace Qube7.Composite.Presentation
             /// <param name="type">The type of the <see cref="ViewModel"/>.</param>
             private TemplateManager(Type type) : base(StringComparer.InvariantCulture, 4)
             {
-                foreach (View view in type.GetCustomAttributes<View>(false))
+                foreach (ViewAttribute view in type.GetCustomAttributes<ViewAttribute>(false))
                 {
                     if (string.IsNullOrEmpty(view.Name))
                     {
@@ -319,7 +319,7 @@ namespace Qube7.Composite.Presentation
         /// Indicates that the value of the property is culture-sensitive.
         /// </summary>
         [AttributeUsage(AttributeTargets.Property, Inherited = false)]
-        protected sealed class Localized : Attribute, IDependsOn
+        protected sealed class LocalizedAttribute : Attribute, IDependsOn
         {
             #region Fields
 
@@ -333,7 +333,7 @@ namespace Qube7.Composite.Presentation
             #region Properties
 
             /// <summary>
-            /// Gets the names of the related properties declared in this <see cref="Localized"/>.
+            /// Gets the names of the related properties declared in this <see cref="LocalizedAttribute"/>.
             /// </summary>
             /// <value>The names of the related properties.</value>
             string[] IDependsOn.Properties
@@ -346,9 +346,9 @@ namespace Qube7.Composite.Presentation
             #region Constructors
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="Localized"/> class.
+            /// Initializes a new instance of the <see cref="LocalizedAttribute"/> class.
             /// </summary>
-            public Localized()
+            public LocalizedAttribute()
             {
             }
 

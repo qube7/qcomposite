@@ -33,7 +33,7 @@ namespace $rootnamespace$.$safename$
 
         protected override void OnActivated()
         {
-            Dispatch.Async(Container, Compose);
+            Container.DispatchAsync(Compose);
         }
 
         private void Compose()
