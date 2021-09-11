@@ -35,10 +35,10 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ToolBarTray tray = d as ToolBarTray;
-            if (tray != null)
+            if (d is ToolBarTray tray)
             {
                 SourceBehavior behavior = tray.ReadLocalValue(BehaviorProperty) as SourceBehavior;
+
                 if (behavior == null)
                 {
                     behavior = new SourceBehavior(tray);
@@ -121,16 +121,14 @@ namespace Qube7.Composite.Behaviors
             {
                 if (oldValue != newValue)
                 {
-                    INotifyCollectionChanged collection1 = oldValue as INotifyCollectionChanged;
-                    if (collection1 != null)
+                    if (oldValue is INotifyCollectionChanged collection1)
                     {
                         CollectionChangedEvent.RemoveListener(collection1, this);
                     }
 
                     OnItemsReset(newValue);
 
-                    INotifyCollectionChanged collection2 = newValue as INotifyCollectionChanged;
-                    if (collection2 != null)
+                    if (newValue is INotifyCollectionChanged collection2)
                     {
                         CollectionChangedEvent.AddListener(collection2, this);
                     }
@@ -190,8 +188,7 @@ namespace Qube7.Composite.Behaviors
             /// <param name="item">The item that was added to the collection.</param>
             private void OnItemAdded(object item)
             {
-                ToolBar control = item as ToolBar;
-                if (control != null)
+                if (item is ToolBar control)
                 {
                     source.Add(control);
 
@@ -205,8 +202,7 @@ namespace Qube7.Composite.Behaviors
             /// <param name="item">The item that was removed from the collection.</param>
             private void OnItemRemoved(object item)
             {
-                ToolBar control = item as ToolBar;
-                if (control != null)
+                if (item is ToolBar control)
                 {
                     target.ToolBars.Remove(control);
 

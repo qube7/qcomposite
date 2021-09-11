@@ -53,9 +53,7 @@ namespace Qube7.Composite.Converters
                 return value.ToString().Length > 0 ? BooleanBox.False : BooleanBox.True;
             }
 
-            IEnumerable enumerable = value as IEnumerable;
-
-            if (enumerable != null)
+            if (value is IEnumerable enumerable)
             {
                 IEnumerator enumerator = enumerable.GetEnumerator();
 

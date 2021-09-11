@@ -1,12 +1,10 @@
-﻿using System;
-
-namespace Qube7.ComponentModel
+﻿namespace Qube7.ComponentModel
 {
     /// <summary>
     /// Represents an object that listens for an event.
     /// </summary>
     /// <typeparam name="T">The type of the event data.</typeparam>
-    public interface IEventListener<in T> where T : EventArgs
+    public interface IEventListener<in T>
     {
         #region Methods
 

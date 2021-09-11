@@ -79,6 +79,24 @@ namespace Qube7.Composite {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot update the collection while the navigation is in progress..
+        /// </summary>
+        internal static string CollectionNavigating {
+            get {
+                return ResourceManager.GetString("CollectionNavigating", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot update the collection while the recomposition is in progress..
+        /// </summary>
+        internal static string CollectionRecomposing {
+            get {
+                return ResourceManager.GetString("CollectionRecomposing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The composition container encountered an unexpected exception while disposing, review inner exception for details..
         /// </summary>
         internal static string ContainerDisposeException {
@@ -88,7 +106,7 @@ namespace Qube7.Composite {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The specified controller already has associated composition container and is activated..
+        ///   Looks up a localized string similar to The controller has already associated composition container and is activated..
         /// </summary>
         internal static string ControllerActivated {
             get {
@@ -124,7 +142,7 @@ namespace Qube7.Composite {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The parent controller of the specified controller does not have associated composition container. Make sure that the parent controller is activated before activating child controller..
+        ///   Looks up a localized string similar to The parent controller does not have associated composition container. Make sure that the parent controller is activated before activating child controller..
         /// </summary>
         internal static string ParentNotActivated {
             get {
@@ -142,7 +160,7 @@ namespace Qube7.Composite {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;{0}&apos; is not public property of the &apos;{1}&apos; instance..
+        ///   Looks up a localized string similar to The &apos;{0}&apos; property not found on the &apos;{1}&apos; object..
         /// </summary>
         internal static string PropertyNotFound {
             get {

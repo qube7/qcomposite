@@ -39,8 +39,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnSecurePasswordChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            PasswordBox passwordBox = d as PasswordBox;
-            if (passwordBox != null)
+            if (d is PasswordBox passwordBox)
             {
                 if (e.OldValue == UnsetSecure)
                 {
@@ -67,9 +66,10 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="RoutedEventArgs"/> that contains the event data.</param>
         private static void OnPasswordBoxPasswordChanged(object sender, RoutedEventArgs e)
         {
-            PasswordBox passwordBox = sender as PasswordBox;
-
-            passwordBox?.SetCurrentValue(SecurePasswordProperty, passwordBox.SecurePassword);
+            if (sender is PasswordBox passwordBox)
+            {
+                passwordBox.SetCurrentValue(SecurePasswordProperty, passwordBox.SecurePassword);
+            }
         }
 
         /// <summary>
@@ -79,8 +79,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnSelectAllOnGotFocusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            PasswordBox passwordBox = d as PasswordBox;
-            if (passwordBox != null)
+            if (d is PasswordBox passwordBox)
             {
                 if (e.NewValue is bool && (bool)e.NewValue)
                 {
@@ -100,9 +99,10 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="RoutedEventArgs"/> that contains the event data.</param>
         private static void OnPasswordBoxGotFocus(object sender, RoutedEventArgs e)
         {
-            PasswordBox passwordBox = sender as PasswordBox;
-
-            passwordBox?.SelectAll();
+            if (sender is PasswordBox passwordBox)
+            {
+                passwordBox.SelectAll();
+            }
         }
 
         /// <summary>

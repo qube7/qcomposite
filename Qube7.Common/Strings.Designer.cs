@@ -61,11 +61,11 @@ namespace Qube7 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An item with the same key has already been added..
+        ///   Looks up a localized string similar to Argument must contain at least one element..
         /// </summary>
-        internal static string AddingDuplicate {
+        internal static string ArgumentEmpty {
             get {
-                return ResourceManager.GetString("AddingDuplicate", resourceCulture);
+                return ResourceManager.GetString("ArgumentEmpty", resourceCulture);
             }
         }
         
@@ -79,7 +79,7 @@ namespace Qube7 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Non negative number is required..
+        ///   Looks up a localized string similar to Argument must be non-negative..
         /// </summary>
         internal static string ArgumentNegative {
             get {
@@ -97,6 +97,24 @@ namespace Qube7 {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument cannot contain a null element..
+        /// </summary>
+        internal static string ArgumentNullElement {
+            get {
+                return ResourceManager.GetString("ArgumentNullElement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Argument cannot consist entirely of white-space characters..
+        /// </summary>
+        internal static string ArgumentWhiteSpace {
+            get {
+                return ResourceManager.GetString("ArgumentWhiteSpace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The &apos;{0}&apos; must be defined for the &apos;{1}&apos;..
         /// </summary>
         internal static string AttributeNotDefined {
@@ -106,16 +124,16 @@ namespace Qube7 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Capacity overflowed and went negative..
+        ///   Looks up a localized string similar to Count must be positive and count must refer to a location within the array..
         /// </summary>
-        internal static string CapacityOverflow {
+        internal static string CountRangeArray {
             get {
-                return ResourceManager.GetString("CapacityOverflow", resourceCulture);
+                return ResourceManager.GetString("CountRangeArray", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Count must be positive and count must refer to a location within the collection..
+        ///   Looks up a localized string similar to Count must be positive and count must refer to a location within the list..
         /// </summary>
         internal static string CountRangeList {
             get {
@@ -124,65 +142,20 @@ namespace Qube7 {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Collection was modified after the enumerator was instantiated..
+        ///   Looks up a localized string similar to Index was out of range, must be non-negative and less than the size of the array..
         /// </summary>
-        internal static string EnumeratorFailedVersion {
+        internal static string IndexRangeArray {
             get {
-                return ResourceManager.GetString("EnumeratorFailedVersion", resourceCulture);
+                return ResourceManager.GetString("IndexRangeArray", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enumeration has either not started or has already finished..
-        /// </summary>
-        internal static string EnumeratorInvalidPosition {
-            get {
-                return ResourceManager.GetString("EnumeratorInvalidPosition", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This collection does not support setting extensions by index..
-        /// </summary>
-        internal static string ExtensionCannotSet {
-            get {
-                return ResourceManager.GetString("ExtensionCannotSet", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Index must be less than the length of the array..
-        /// </summary>
-        internal static string IndexGreaterEqualLength {
-            get {
-                return ResourceManager.GetString("IndexGreaterEqualLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Index cannot be larger than the length of the array..
-        /// </summary>
-        internal static string IndexGreaterLength {
-            get {
-                return ResourceManager.GetString("IndexGreaterLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Index was out of range, must be non-negative and less than the size of the collection..
+        ///   Looks up a localized string similar to Index was out of range, must be non-negative and less than the size of the list..
         /// </summary>
         internal static string IndexRangeList {
             get {
                 return ResourceManager.GetString("IndexRangeList", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Index must be within the bounds of the list..
-        /// </summary>
-        internal static string IndexRangeListInsert {
-            get {
-                return ResourceManager.GetString("IndexRangeListInsert", resourceCulture);
             }
         }
         
@@ -201,24 +174,6 @@ namespace Qube7 {
         internal static string NotOverridden {
             get {
                 return ResourceManager.GetString("NotOverridden", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection..
-        /// </summary>
-        internal static string OffsetLengthInvalid {
-            get {
-                return ResourceManager.GetString("OffsetLengthInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The underlying collection is read-only..
-        /// </summary>
-        internal static string ReadOnlyCollection {
-            get {
-                return ResourceManager.GetString("ReadOnlyCollection", resourceCulture);
             }
         }
         

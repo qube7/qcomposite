@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Threading;
 
 namespace Qube7.Composite.Hosting
 {
     /// <summary>
     /// Discovers a module provided by the assembly resolved from the specified location.
     /// </summary>
-    public class AssemblyModule : ModuleDiscovery
+    public class AssemblyModule : ModuleIterator
     {
         #region Fields
 
         /// <summary>
         /// The default absolute <see cref="Uri"/> that is the base for the assembly location.
         /// </summary>
-        private static readonly Uri baseUri = new Uri(AppDomain.CurrentDomain.BaseDirectory);
+        private static readonly Uri BaseUri = new Uri(AppDomain.CurrentDomain.BaseDirectory);
 
         /// <summary>
         /// The location of the assembly file.
@@ -72,14 +73,18 @@ namespace Qube7.Composite.Hosting
         {
             if (assemblyFile != null)
             {
-                string assemblyPath = assemblyFile.IsAbsoluteUri ? assemblyFile.LocalPath : new Uri(baseUri, assemblyFile).LocalPath;
+                string assemblyPath = assemblyFile.IsAbsoluteUri ? assemblyFile.LocalPath : new Uri(BaseUri, assemblyFile).LocalPath;
+
+                AssemblyName assemblyName = AssemblyName.GetAssemblyName(assemblyPath);
+
+                assemblyName.CodeBase = assemblyPath;
 
                 if (AssemblyName != null)
                 {
-                    AssemblyHelper.VerifyAssemblyName(assemblyPath, AssemblyName);
+                    AssemblyHelper.VerifyAssemblyName(AssemblyName, assemblyName);
                 }
 
-                yield return new AssemblyModuleContext(assemblyPath);
+                yield return new AssemblyModuleContext(assemblyName);
             }
         }
 
@@ -95,14 +100,37 @@ namespace Qube7.Composite.Hosting
             #region Fields
 
             /// <summary>
-            /// The location of the assembly file.
+            /// The identity of the assembly.
             /// </summary>
-            private readonly string assemblyPath;
+            private readonly AssemblyName assemblyName;
 
             /// <summary>
-            /// The underlying assembly load context.
+            /// The assembly load context.
             /// </summary>
-            private ModuleAssemblyLoadContext context;
+            private AssemblyLoadContext context;
+
+            #endregion
+
+            #region Properties
+
+            /// <summary>
+            /// Gets the underlying assembly load context.
+            /// </summary>
+            /// <value>The assembly load context.</value>
+            private AssemblyLoadContext Context
+            {
+                get
+                {
+                    if (context == null)
+                    {
+                        AssemblyLoadContext created = new ModuleAssemblyLoadContext(assemblyName.CodeBase);
+
+                        Interlocked.CompareExchange(ref context, created, null);
+                    }
+
+                    return context;
+                }
+            }
 
             #endregion
 
@@ -111,10 +139,10 @@ namespace Qube7.Composite.Hosting
             /// <summary>
             /// Initializes a new instance of the <see cref="AssemblyModuleContext"/> class.
             /// </summary>
-            /// <param name="assemblyPath">The location of the assembly file.</param>
-            internal AssemblyModuleContext(string assemblyPath)
+            /// <param name="assemblyName">The identity of the assembly.</param>
+            internal AssemblyModuleContext(AssemblyName assemblyName)
             {
-                this.assemblyPath = assemblyPath;
+                this.assemblyName = assemblyName;
             }
 
             #endregion
@@ -127,9 +155,7 @@ namespace Qube7.Composite.Hosting
             /// <returns>The created module object instance.</returns>
             protected override Module CreateModule()
             {
-                context = new ModuleAssemblyLoadContext(assemblyPath);
-
-                Assembly assembly = context.LoadFromAssemblyPath(assemblyPath);
+                Assembly assembly = Context.LoadFromAssemblyName(assemblyName);
 
                 AssemblyModuleAttribute attribute = assembly.GetCustomAttribute<AssemblyModuleAttribute>();
 
@@ -138,19 +164,7 @@ namespace Qube7.Composite.Hosting
                     throw Error.AttributeNotDefined(typeof(AssemblyModuleAttribute), assembly);
                 }
 
-                return CreateModule(attribute.ModuleType);
-            }
-
-            /// <summary>
-            /// Creates the module instance of the specified type.
-            /// </summary>
-            /// <param name="moduleType">The type of the module to create.</param>
-            /// <returns>The created module object instance.</returns>
-            private static Module CreateModule(Type moduleType)
-            {
-                ModuleHelper.VerifyModule(moduleType);
-
-                return Activator.CreateInstance(moduleType) as Module;
+                return ModuleFactory.CreateModule(attribute.ModuleType);
             }
 
             /// <summary>
@@ -229,7 +243,7 @@ namespace Qube7.Composite.Hosting
                 {
                     string assemblyPath = resolver.ResolveAssemblyToPath(assemblyName);
 
-                    return assemblyPath != null && AssemblyHelper.MatchAssemblyName(assemblyPath, assemblyName) ? LoadFromAssemblyPath(assemblyPath) : null;
+                    return assemblyPath != null && AssemblyHelper.MatchAssemblyName(assemblyName, AssemblyName.GetAssemblyName(assemblyPath)) ? LoadFromAssemblyPath(assemblyPath) : null;
                 }
 
                 #endregion

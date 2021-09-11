@@ -33,26 +33,12 @@ namespace Qube7
         #region Methods
 
         /// <summary>
-        /// Disposes the specified object instance.
-        /// </summary>
-        /// <typeparam name="T">The type of the object to dispose.</typeparam>
-        /// <param name="disposable">The object to dispose.</param>
-        public static void Dispose<T>(T disposable) where T : IDisposable
-        {
-            if (disposable != null)
-            {
-                disposable.Dispose();
-            }
-        }
-
-        /// <summary>
         /// Disposes the specified object instance if it implements the <see cref="IDisposable"/>.
         /// </summary>
         /// <param name="instance">The object to dispose.</param>
         public static void Dispose(object instance)
         {
-            IDisposable disposable = instance as IDisposable;
-            if (disposable != null)
+            if (instance is IDisposable disposable)
             {
                 disposable.Dispose();
             }

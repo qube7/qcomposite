@@ -123,11 +123,17 @@
   <data name="ChangeIndexExpected" xml:space="preserve">
     <value>The collection change notification must provide the index at which the change occurred.</value>
   </data>
+  <data name="CollectionNavigating" xml:space="preserve">
+    <value>Cannot update the collection while the navigation is in progress.</value>
+  </data>
+  <data name="CollectionRecomposing" xml:space="preserve">
+    <value>Cannot update the collection while the recomposition is in progress.</value>
+  </data>
   <data name="ContainerDisposeException" xml:space="preserve">
     <value>The composition container encountered an unexpected exception while disposing, review inner exception for details.</value>
   </data>
   <data name="ControllerActivated" xml:space="preserve">
-    <value>The specified controller already has associated composition container and is activated.</value>
+    <value>The controller has already associated composition container and is activated.</value>
   </data>
   <data name="DesignTimeOnly" xml:space="preserve">
     <value>The '{0}' can be used at design-time only.</value>
@@ -139,13 +145,13 @@
     <value>The parameter must be of the '{0}' type.</value>
   </data>
   <data name="ParentNotActivated" xml:space="preserve">
-    <value>The parent controller of the specified controller does not have associated composition container. Make sure that the parent controller is activated before activating child controller.</value>
+    <value>The parent controller does not have associated composition container. Make sure that the parent controller is activated before activating child controller.</value>
   </data>
   <data name="PropertyExpressionInvalid" xml:space="preserve">
     <value>Only '{0}' instance property expression is supported.</value>
   </data>
   <data name="PropertyNotFound" xml:space="preserve">
-    <value>The '{0}' is not public property of the '{1}' instance.</value>
+    <value>The '{0}' property not found on the '{1}' object.</value>
   </data>
   <data name="RangeAction" xml:space="preserve">
     <value>Range actions are not supported.</value>

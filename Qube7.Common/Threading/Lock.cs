@@ -148,7 +148,7 @@ namespace Qube7.Threading
             /// <summary>
             /// The inner lock.
             /// </summary>
-            private ReaderWriterLockSlim inner;
+            private readonly ReaderWriterLockSlim inner;
 
             #endregion
 
@@ -188,7 +188,7 @@ namespace Qube7.Threading
             /// <summary>
             /// The inner lock.
             /// </summary>
-            private ReaderWriterLockSlim inner;
+            private readonly ReaderWriterLockSlim inner;
 
             #endregion
 
@@ -228,7 +228,7 @@ namespace Qube7.Threading
             /// <summary>
             /// The inner lock.
             /// </summary>
-            private ReaderWriterLockSlim inner;
+            private readonly ReaderWriterLockSlim inner;
 
             #endregion
 

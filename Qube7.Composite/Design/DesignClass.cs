@@ -43,7 +43,7 @@ namespace Qube7.Composite.Design
                 return;
             }
 
-            throw Error.NotSupported(Format.Current(Strings.DesignTimeOnly, nameof(DesignClass)));
+            throw Error.NotSupported(string.Format(Strings.DesignTimeOnly, nameof(DesignClass)));
         }
 
         #endregion
@@ -64,13 +64,10 @@ namespace Qube7.Composite.Design
                 if (Designer.DesignMode)
                 {
                     IRootObjectProvider provider = serviceProvider.GetService<IRootObjectProvider>();
-                    if (provider != null)
+
+                    if (provider != null && provider.RootObject is DependencyObject element)
                     {
-                        DependencyObject element = provider.RootObject as DependencyObject;
-                        if (element != null)
-                        {
-                            Designer.SetDesignType(element, type);
-                        }
+                        Designer.SetDesignType(element, type);
                     }
                 }
 

@@ -3,7 +3,7 @@
 namespace Qube7.ComponentModel
 {
     /// <summary>
-    /// Provides helpers for the <see cref="IEventListener{T}"/>.
+    /// Provides helper methods for creating event listening objects.
     /// </summary>
     public static class EventListener
     {
@@ -27,7 +27,7 @@ namespace Qube7.ComponentModel
         /// <typeparam name="T">The type of the event data.</typeparam>
         /// <param name="handler">The handler delegate to wrap.</param>
         /// <returns>A <see cref="IEventListener{T}"/> wrapper.</returns>
-        public static IEventListener<T> FromHandler<T>(EventHandler<T> handler) where T : EventArgs
+        public static IEventListener<T> FromHandler<T>(EventHandler<T> handler)
         {
             Requires.NotNull(handler, nameof(handler));
 
@@ -75,7 +75,7 @@ namespace Qube7.ComponentModel
         /// Represents a event listener that delegates the event-handling method.
         /// </summary>
         /// <typeparam name="T">The type of the event data.</typeparam>
-        private class DelegateListener<T> : EventListener<T, EventHandler<T>> where T : EventArgs
+        private class DelegateListener<T> : EventListener<T, EventHandler<T>>
         {
             #region Constructors
 

@@ -40,8 +40,7 @@ namespace Qube7.Composite.Data
         /// <returns>The <see cref="DataTemplate"/> for the <paramref name="item"/>.</returns>
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
-            ViewModel model = item as ViewModel;
-            if (model != null)
+            if (item is ViewModel model)
             {
                 return model.ProvideTemplate(TemplateName);
             }

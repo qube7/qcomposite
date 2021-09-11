@@ -20,14 +20,14 @@ namespace Qube7.Composite.Converters
         #region Fields
 
         /// <summary>
-        /// Identifies the <see cref="ItemContainerTemplate"/> dependency property.
+        /// Identifies the <see cref="ItemTemplate"/> dependency property.
         /// </summary>
-        public static readonly DependencyProperty ItemContainerTemplateProperty = DependencyProperty.Register(nameof(ItemContainerTemplate), typeof(DataTemplate), typeof(ItemsConverter), new PropertyMetadata(OnPropertyChanged));
+        public static readonly DependencyProperty ItemTemplateProperty = DependencyProperty.Register(nameof(ItemTemplate), typeof(DataTemplate), typeof(ItemsConverter), new PropertyMetadata(OnPropertyChanged));
 
         /// <summary>
-        /// Identifies the <see cref="ItemContainerTemplateSelector"/> dependency property.
+        /// Identifies the <see cref="ItemTemplateSelector"/> dependency property.
         /// </summary>
-        public static readonly DependencyProperty ItemContainerTemplateSelectorProperty = DependencyProperty.Register(nameof(ItemContainerTemplateSelector), typeof(DataTemplateSelector), typeof(ItemsConverter), new PropertyMetadata(OnPropertyChanged));
+        public static readonly DependencyProperty ItemTemplateSelectorProperty = DependencyProperty.Register(nameof(ItemTemplateSelector), typeof(DataTemplateSelector), typeof(ItemsConverter), new PropertyMetadata(OnPropertyChanged));
 
         /// <summary>
         /// Identifies the <see cref="ItemContainerStyle"/> dependency property.
@@ -62,20 +62,20 @@ namespace Qube7.Composite.Converters
         /// Gets or sets the <see cref="DataTemplate"/> used to display each item.
         /// </summary>
         /// <value>The <see cref="DataTemplate"/> that specifies the visualization of the data objects.</value>
-        public DataTemplate ItemContainerTemplate
+        public DataTemplate ItemTemplate
         {
-            get { return (DataTemplate)GetValue(ItemContainerTemplateProperty); }
-            set { SetValue(ItemContainerTemplateProperty, value); }
+            get { return (DataTemplate)GetValue(ItemTemplateProperty); }
+            set { SetValue(ItemTemplateProperty, value); }
         }
 
         /// <summary>
         /// Gets or sets the custom logic for choosing a template used to display each item.
         /// </summary>
         /// <value>The <see cref="DataTemplateSelector"/> object that returns a <see cref="DataTemplate"/>.</value>
-        public DataTemplateSelector ItemContainerTemplateSelector
+        public DataTemplateSelector ItemTemplateSelector
         {
-            get { return (DataTemplateSelector)GetValue(ItemContainerTemplateSelectorProperty); }
-            set { SetValue(ItemContainerTemplateSelectorProperty, value); }
+            get { return (DataTemplateSelector)GetValue(ItemTemplateSelectorProperty); }
+            set { SetValue(ItemTemplateSelectorProperty, value); }
         }
 
         /// <summary>
@@ -133,8 +133,7 @@ namespace Qube7.Composite.Converters
         /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ItemsConverter converter = d as ItemsConverter;
-            if (converter != null)
+            if (d is ItemsConverter converter)
             {
                 converter.OnPropertyChanged(new PropertyChangedEventArgs(e.Property.Name));
             }
@@ -152,7 +151,7 @@ namespace Qube7.Composite.Converters
                 return;
             }
 
-            throw Error.InvalidOperation(Format.Current(Strings.StyleTypeInvalid, targetType, type));
+            throw Error.InvalidOperation(string.Format(Strings.StyleTypeInvalid, targetType, type));
         }
 
         /// <summary>
@@ -235,8 +234,8 @@ namespace Qube7.Composite.Converters
         /// <returns>The container element for the <paramref name="item"/>.</returns>
         private DependencyObject GetContainer(object item)
         {
-            DataTemplate template = ItemContainerTemplate;
-            DataTemplateSelector templateSelector = template == null ? ItemContainerTemplateSelector : null;
+            DataTemplate template = ItemTemplate;
+            DataTemplateSelector templateSelector = template == null ? ItemTemplateSelector : null;
 
             Style style = ItemContainerStyle;
             StyleSelector styleSelector = style == null ? ItemContainerStyleSelector : null;
@@ -251,8 +250,8 @@ namespace Qube7.Composite.Converters
         /// <returns>The sequence of generated container elements.</returns>
         private IEnumerable<DependencyObject> GetContainers(IList items)
         {
-            DataTemplate template = ItemContainerTemplate;
-            DataTemplateSelector templateSelector = template == null ? ItemContainerTemplateSelector : null;
+            DataTemplate template = ItemTemplate;
+            DataTemplateSelector templateSelector = template == null ? ItemTemplateSelector : null;
 
             Style style = ItemContainerStyle;
             StyleSelector styleSelector = style == null ? ItemContainerStyleSelector : null;
@@ -292,8 +291,7 @@ namespace Qube7.Composite.Converters
         /// <returns>The <see cref="IList"/> of generated item container elements.</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            IList items = value as IList;
-            if (items != null)
+            if (value is IList items)
             {
                 return new ContainerCollection(items, this);
             }
@@ -421,8 +419,7 @@ namespace Qube7.Composite.Converters
 
                 PropertyChangedEvent.AddListener(converter, propertyListener);
 
-                INotifyCollectionChanged collection = items as INotifyCollectionChanged;
-                if (collection != null)
+                if (items is INotifyCollectionChanged collection)
                 {
                     this.items = items;
 
@@ -601,10 +598,10 @@ namespace Qube7.Composite.Converters
             /// <param name="e">The <see cref="PropertyChangedEventArgs"/> instance containing the event data.</param>
             private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
             {
-                if (e.PropertyName == nameof(ItemContainerTemplate) || (e.PropertyName == nameof(ItemContainerTemplateSelector) && converter.ItemContainerTemplate == null))
+                if (e.PropertyName == nameof(ItemTemplate) || (e.PropertyName == nameof(ItemTemplateSelector) && converter.ItemTemplate == null))
                 {
-                    DataTemplate template = converter.ItemContainerTemplate;
-                    DataTemplateSelector templateSelector = template == null ? converter.ItemContainerTemplateSelector : null;
+                    DataTemplate template = converter.ItemTemplate;
+                    DataTemplateSelector templateSelector = template == null ? converter.ItemTemplateSelector : null;
 
                     Style style = converter.ItemContainerStyle;
                     StyleSelector styleSelector = style == null ? converter.ItemContainerStyleSelector : null;

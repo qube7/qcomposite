@@ -6,7 +6,7 @@ using System.Reflection;
 namespace Qube7.Composite
 {
     /// <summary>
-    /// Provides methods for subscribing and unsubscribing property change notification.
+    /// Provides extension methods for the <see cref="ISubscriber{T}"/>.
     /// </summary>
     public static class Subscriber
     {
@@ -87,13 +87,12 @@ namespace Qube7.Composite
         {
             Requires.NotNull(propertySelector, nameof(propertySelector));
 
-            MemberExpression expression = propertySelector.Body as MemberExpression;
-            if (expression == null || expression.Expression as ParameterExpression == null || expression.Member as PropertyInfo == null)
+            if (propertySelector.Body is MemberExpression expression && expression.Expression is ParameterExpression && expression.Member is PropertyInfo)
             {
-                throw Error.Argument(Format.Current(Strings.PropertyExpressionInvalid, typeof(T)), nameof(propertySelector));
+                return expression.Member.Name;
             }
 
-            return expression.Member.Name;
+            throw Error.Argument(string.Format(Strings.PropertyExpressionInvalid, typeof(T)), nameof(propertySelector));
         }
 
         #endregion

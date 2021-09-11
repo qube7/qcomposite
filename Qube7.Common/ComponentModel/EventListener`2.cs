@@ -1,13 +1,11 @@
-﻿using System;
-
-namespace Qube7.ComponentModel
+﻿namespace Qube7.ComponentModel
 {
     /// <summary>
     /// Represents a event listener that delegates the event-handling method.
     /// </summary>
     /// <typeparam name="T">The type of the event data.</typeparam>
     /// <typeparam name="THandler">The type of the event handler object.</typeparam>
-    public abstract class EventListener<T, THandler> : IEventListener<T> where T : EventArgs
+    public abstract class EventListener<T, THandler> : IEventListener<T>
     {
         #region Fields
 

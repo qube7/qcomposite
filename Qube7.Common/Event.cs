@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading;
+using Qube7.ComponentModel;
 
 namespace Qube7
 {
     /// <summary>
-    /// Provides thread-safe event operations.
+    /// Provides helper methods for performing thread-safe event operations.
     /// </summary>
     public static class Event
     {
@@ -44,7 +45,7 @@ namespace Qube7
         /// <param name="handler">The event handler to raise.</param>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
-        public static void Raise<T>(EventHandler<T> handler, object sender, T e) where T : EventArgs
+        public static void Raise<T>(EventHandler<T> handler, object sender, T e)
         {
             if (handler != null)
             {
@@ -179,7 +180,7 @@ namespace Qube7
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
         /// <exception cref="AggregateException">The exception is thrown by at least one of the subscribers.</exception>
-        public static void RaiseSafe<T>(EventHandler<T> handler, object sender, T e) where T : EventArgs
+        public static void RaiseSafe<T>(EventHandler<T> handler, object sender, T e)
         {
             if (handler != null)
             {
@@ -407,22 +408,29 @@ namespace Qube7
         /// <param name="handler">The event handler to raise.</param>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
-        public static void RaiseCancel<T>(EventHandler<T> handler, object sender, T e) where T : CancelEventArgs
+        public static void RaiseCancel<T>(EventHandler<T> handler, object sender, T e) where T : CancelableEventArgs
         {
             Requires.NotNull(e, nameof(e));
 
             if (handler != null)
             {
-                Delegate[] list = handler.GetInvocationList();
-                for (int i = 0; i < list.Length; i++)
+                if (e.CanCancel)
                 {
-                    if (e.Cancel)
+                    Delegate[] list = handler.GetInvocationList();
+                    for (int i = 0; i < list.Length; i++)
                     {
-                        return;
+                        if (e.IsCanceled)
+                        {
+                            return;
+                        }
+
+                        (list[i] as EventHandler<T>)(sender, e);
                     }
 
-                    (list[i] as EventHandler<T>)(sender, e);
+                    return;
                 }
+
+                handler(sender, e);
             }
         }
 
@@ -493,7 +501,7 @@ namespace Qube7
         /// <typeparam name="T">The type of the event data.</typeparam>
         /// <param name="handler">The event handler to subscribe to.</param>
         /// <param name="value">The event handler to subscribe.</param>
-        public static void Subscribe<T>(ref EventHandler<T> handler, EventHandler<T> value) where T : EventArgs
+        public static void Subscribe<T>(ref EventHandler<T> handler, EventHandler<T> value)
         {
             EventHandler<T> comparand;
             EventHandler<T> location = handler;
@@ -512,7 +520,7 @@ namespace Qube7
         /// <typeparam name="T">The type of the event data.</typeparam>
         /// <param name="handler">The event handler to unsubscribe from.</param>
         /// <param name="value">The event handler to unsubscribe.</param>
-        public static void Unsubscribe<T>(ref EventHandler<T> handler, EventHandler<T> value) where T : EventArgs
+        public static void Unsubscribe<T>(ref EventHandler<T> handler, EventHandler<T> value)
         {
             EventHandler<T> comparand;
             EventHandler<T> location = handler;

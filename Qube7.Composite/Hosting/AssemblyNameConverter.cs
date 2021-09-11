@@ -38,9 +38,7 @@ namespace Qube7.Composite.Hosting
         /// <returns>An <see cref="Object"/> that represents the converted value.</returns>
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            string source = value as string;
-
-            if (source != null)
+            if (value is string source)
             {
                 return new AssemblyName(source);
             }
@@ -79,9 +77,7 @@ namespace Qube7.Composite.Hosting
         /// <returns>An <see cref="Object"/> that represents the converted value.</returns>
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
-            AssemblyName source = value as AssemblyName;
-
-            if (source != null)
+            if (value is AssemblyName source)
             {
                 if (destinationType == typeof(string))
                 {

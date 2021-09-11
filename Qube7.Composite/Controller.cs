@@ -7,6 +7,7 @@ using System.ComponentModel.Composition.Primitives;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 using Qube7.Composite.Threading;
 using Qube7.Threading;
@@ -16,24 +17,19 @@ namespace Qube7.Composite
     /// <summary>
     /// Provides a base class for controller that encapsulates the logic required to support a use case or user task.
     /// </summary>
-    public abstract class Controller : ExportProvider
+    public abstract class Controller : ExportProvider, IServiceProvider
     {
         #region Fields
-
-        /// <summary>
-        /// Specifies the metadata key created by the composition system to mark an export scope.
-        /// </summary>
-        public const string ExportScopeMetadataName = nameof(ExportScopeAttribute.ExportScope);
-
-        /// <summary>
-        /// Specifies the metadata key created by the composition system to mark a method that requires the user interface thread.
-        /// </summary>
-        private const string RequiresUIThreadMetadataName = nameof(RequiresUIThreadAttribute.RequiresUIThread);
 
         /// <summary>
         /// The event broker.
         /// </summary>
         private readonly EventBroker broker;
+
+        /// <summary>
+        /// The local exports.
+        /// </summary>
+        private readonly Export[] local;
 
         /// <summary>
         /// The composition container.
@@ -64,6 +60,20 @@ namespace Qube7.Composite
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Occurs when the controller is activated.
+        /// </summary>
+        public event EventHandler Activated;
+
+        /// <summary>
+        /// Occurs when the controller is deactivated.
+        /// </summary>
+        public event EventHandler Deactivated;
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -72,6 +82,8 @@ namespace Qube7.Composite
         protected Controller()
         {
             broker = new EventBroker(this);
+
+            local = Params.Array(new Export(EventBroker.Definition, () => broker));
         }
 
         #endregion
@@ -79,30 +91,32 @@ namespace Qube7.Composite
         #region Methods
 
         /// <summary>
-        /// When overridden in a derived class, activates behavior of the current controller instance.
+        /// Raises the <see cref="Activated"/> event.
         /// </summary>
-        /// <remarks>This method is called when the <see cref="XContainer"/> instance gets associated with the current controller.</remarks>
+        /// <remarks>This method is called when the <see cref="XContainer"/> instance gets associated with the <see cref="Controller"/>.</remarks>
         protected virtual void OnActivated()
         {
+            Event.Raise(Activated, this);
         }
 
         /// <summary>
-        /// When overridden in a derived class, performs cleanup after deactivating behavior of the current controller instance.
+        /// Raises the <see cref="Deactivated"/> event.
         /// </summary>
-        /// <remarks>This method is called when the <see cref="XContainer"/> instance gets disposed and disassociated with the current controller.</remarks>
+        /// <remarks>This method is called when the <see cref="XContainer"/> instance gets disposed and disassociated with the <see cref="Controller"/>.</remarks>
         protected virtual void OnDeactivated()
         {
+            Event.Raise(Deactivated, this);
         }
 
         /// <summary>
-        /// Executes the specified child <see cref="Controller"/> instance.
+        /// Activates behavior of the <see cref="Controller"/>.
         /// </summary>
-        /// <param name="controller">The child controller to execute.</param>
-        protected void Execute(Controller controller)
+        /// <param name="parent">The parent controller.</param>
+        public void Activate(Controller parent)
         {
-            Requires.NotNull(controller, nameof(controller));
+            Requires.NotNull(parent, nameof(parent));
 
-            XContainer.Activate(controller, this);
+            XContainer.Activate(this, parent);
         }
 
         /// <summary>
@@ -121,54 +135,58 @@ namespace Qube7.Composite
                 source = (ImportSource)value;
             }
 
-            IEnumerable<Export> exports = Enumerable.Empty<Export>();
-
             using (Sync.Read())
             {
                 if (container != null)
                 {
-                    bool raise = false;
+                    List<Export> list = new List<Export>();
+
+                    IEnumerable<Export> exports = null;
 
                     switch (source)
                     {
                         case ImportSource.Any:
                             container.root.TryGetExports(definition, atomicComposition, out exports);
-                            raise = definition.IsConstraintSatisfiedBy(broker.Definition);
+                            ProvideExports(definition, list);
                             break;
                         case ImportSource.Local:
                             container.local.TryGetExports(definition, atomicComposition, out exports);
-                            raise = definition.IsConstraintSatisfiedBy(broker.Definition);
+                            ProvideExports(definition, list);
                             break;
                         case ImportSource.NonLocal:
                             container.ancestor.TryGetExports(definition, atomicComposition, out exports);
                             break;
                     }
 
-                    if (exports.FastAny())
+                    if (exports.Any())
                     {
-                        List<Export> list = new List<Export>();
-
                         foreach (Export export in exports)
                         {
                             list.Add(new XExport(export));
                         }
-
-                        if (raise)
-                        {
-                            list.Add(broker);
-                        }
-
-                        return list;
                     }
 
-                    if (raise)
-                    {
-                        return Params.Array(broker);
-                    }
+                    return list;
                 }
             }
 
-            return exports;
+            return Enumerable.Empty<Export>();
+        }
+
+        /// <summary>
+        /// Provides the exports that match the constraint defined by the specified definition.
+        /// </summary>
+        /// <param name="definition">The object that defines the conditions of the <see cref="Export"/> objects to get.</param>
+        /// <param name="exports">The collection to add the matching <see cref="Export"/> objects to.</param>
+        private void ProvideExports(ImportDefinition definition, List<Export> exports)
+        {
+            for (int i = 0; i < local.Length; i++)
+            {
+                if (definition.IsConstraintSatisfiedBy(local[i].Definition))
+                {
+                    exports.Add(local[i]);
+                }
+            }
         }
 
         /// <summary>
@@ -189,6 +207,23 @@ namespace Qube7.Composite
         private void OnExportsChanged(object sender, ExportsChangeEventArgs e)
         {
             OnExportsChanged(e);
+        }
+
+        /// <summary>
+        /// Gets the service object of the specified type.
+        /// </summary>
+        /// <param name="serviceType">The type of service object to get.</param>
+        /// <returns>A service object of type <paramref name="serviceType"/>, if available; otherwise, <c>null</c>.</returns>
+        public object GetService(Type serviceType)
+        {
+            Requires.NotNull(serviceType, nameof(serviceType));
+
+            foreach (Export export in GetExports(ImportFactory.CreateImportDefinition(serviceType, ImportCardinality.ZeroOrOne)))
+            {
+                return export.Value;
+            }
+
+            return null;
         }
 
         #endregion
@@ -351,11 +386,9 @@ namespace Qube7.Composite
 
                 CompositionOptions options = CompositionOptions.DisableSilentRejection | CompositionOptions.IsThreadSafe;
 
-                catalog = new CatalogExportProvider(aggregate, options);
-                catalog.SourceProvider = controller;
+                catalog = new CatalogExportProvider(aggregate, options) { SourceProvider = controller };
 
-                composable = new ComposablePartExportProvider(options);
-                composable.SourceProvider = controller;
+                composable = new ComposablePartExportProvider(options) { SourceProvider = controller };
 
                 composable.ExportsChanging += OnExportsChanging;
 
@@ -392,11 +425,11 @@ namespace Qube7.Composite
             }
 
             /// <summary>
-            /// Activates behavior of the specified child <see cref="Controller"/> instance.
+            /// Activates behavior of the specified <see cref="Controller"/>.
             /// </summary>
-            /// <param name="child">The child controller to activate.</param>
+            /// <param name="controller">The controller to activate.</param>
             /// <param name="parent">The parent controller.</param>
-            internal static void Activate(Controller child, Controller parent)
+            internal static void Activate(Controller controller, Controller parent)
             {
                 using (Sync.Write())
                 {
@@ -405,19 +438,19 @@ namespace Qube7.Composite
                         throw Error.Argument(Strings.ParentNotActivated, nameof(parent));
                     }
 
-                    if (child.container != null)
+                    if (controller.container != null)
                     {
-                        throw Error.Argument(Strings.ControllerActivated, nameof(child));
+                        throw Error.Argument(Strings.ControllerActivated, nameof(controller));
                     }
 
-                    child.container = new XContainer(child, parent.container);
+                    controller.container = new XContainer(controller, parent.container);
                 }
 
-                child.OnActivated();
+                controller.OnActivated();
             }
 
             /// <summary>
-            /// Activates behavior of the specified <see cref="Module"/> instance.
+            /// Activates behavior of the specified <see cref="Module"/>.
             /// </summary>
             /// <param name="module">The module to activate.</param>
             internal static void Activate(Module module)
@@ -727,7 +760,7 @@ namespace Qube7.Composite
                 #region Fields
 
                 /// <summary>
-                /// The <see cref="Composable"/> singleton instance.
+                /// Represents the singleton instance of the <see cref="Composable"/> class.
                 /// </summary>
                 internal static readonly Composable Instance = new Composable();
 
@@ -1039,7 +1072,7 @@ namespace Qube7.Composite
 
                     for (int i = 0; i < providers.Count; i++)
                     {
-                        if (providers[i].TryGetExports(definition, atomicComposition, out IEnumerable<Export> exports) && exports.FastAny())
+                        if (providers[i].TryGetExports(definition, atomicComposition, out IEnumerable<Export> exports) && exports.Any())
                         {
                             list.AddRange(exports);
                         }
@@ -1351,7 +1384,7 @@ namespace Qube7.Composite
                 /// <returns><c>true</c> if the constraint is satisfied; otherwise, <c>false</c>.</returns>
                 private static bool Match(ExportDefinition definition)
                 {
-                    return !definition.Metadata.TryGetValue(ExportScopeMetadataName, out object value) || (value is ExportScope && (int)value < 1);
+                    return !definition.Metadata.TryGetValue(MetadataName.ExportScope, out object value) || (value is ExportScope && (int)value < 1);
                 }
 
                 /// <summary>
@@ -1381,8 +1414,7 @@ namespace Qube7.Composite
                 /// <returns>A filtered import for the <paramref name="definition"/>.</returns>
                 private static ImportDefinition Filtered(ImportDefinition definition)
                 {
-                    ContractBasedImportDefinition contract = definition as ContractBasedImportDefinition;
-                    if (contract != null)
+                    if (definition is ContractBasedImportDefinition contract)
                     {
                         return new FilteredContractBasedImportDefinition(contract);
                     }
@@ -1514,7 +1546,7 @@ namespace Qube7.Composite
                 /// <returns><c>true</c> if the constraint is satisfied; otherwise, <c>false</c>.</returns>
                 private static bool Match(ExportDefinition definition)
                 {
-                    return !definition.Metadata.TryGetValue(ExportScopeMetadataName, out object value) || (value is ExportScope && (int)value < 2);
+                    return !definition.Metadata.TryGetValue(MetadataName.ExportScope, out object value) || (value is ExportScope && (int)value < 2);
                 }
 
                 /// <summary>
@@ -1544,8 +1576,7 @@ namespace Qube7.Composite
                 /// <returns>A filtered import for the <paramref name="definition"/>.</returns>
                 private static ImportDefinition Filtered(ImportDefinition definition)
                 {
-                    ContractBasedImportDefinition contract = definition as ContractBasedImportDefinition;
-                    if (contract != null)
+                    if (definition is ContractBasedImportDefinition contract)
                     {
                         return new FilteredContractBasedImportDefinition(contract);
                     }
@@ -1677,7 +1708,7 @@ namespace Qube7.Composite
                 /// <returns><c>true</c> if the constraint is satisfied; otherwise, <c>false</c>.</returns>
                 private static bool Match(ExportDefinition definition)
                 {
-                    return !definition.Metadata.TryGetValue(ExportScopeMetadataName, out object value) || (value is ExportScope && (int)value < 3);
+                    return !definition.Metadata.TryGetValue(MetadataName.ExportScope, out object value) || (value is ExportScope && (int)value < 3);
                 }
 
                 /// <summary>
@@ -1707,8 +1738,7 @@ namespace Qube7.Composite
                 /// <returns>A filtered import for the <paramref name="definition"/>.</returns>
                 private static ImportDefinition Filtered(ImportDefinition definition)
                 {
-                    ContractBasedImportDefinition contract = definition as ContractBasedImportDefinition;
-                    if (contract != null)
+                    if (definition is ContractBasedImportDefinition contract)
                     {
                         return new FilteredContractBasedImportDefinition(contract);
                     }
@@ -1850,34 +1880,19 @@ namespace Qube7.Composite
         /// <summary>
         /// Represents an object that publishes brokered events.
         /// </summary>
-        [Export(typeof(IRaiseEvent))]
-        [ExportScope(ExportScope.Private)]
-        private class EventBroker : Export, IRaiseEvent
+        private class EventBroker : IRaiseEvent
         {
             #region Fields
 
             /// <summary>
-            /// The event broker definition.
+            /// Represents the cached instance of the <see cref="IRaiseEvent"/> export definition.
             /// </summary>
-            private static readonly ExportDefinition definition = AttributedModelServices.CreatePartDefinition(typeof(EventBroker), null).ExportDefinitions.First();
+            internal static readonly ExportDefinition Definition = ExportFactory.CreateExportDefinition(typeof(IRaiseEvent), ExportScope.Private);
 
             /// <summary>
             /// The underlying controller.
             /// </summary>
             private readonly Controller controller;
-
-            #endregion
-
-            #region Properties
-
-            /// <summary>
-            /// Gets the definition that describes the contract that the export satisfies.
-            /// </summary>
-            /// <value>A definition that describes the contract that the <see cref="Export"/> object satisfies.</value>
-            public override ExportDefinition Definition
-            {
-                get { return definition; }
-            }
 
             #endregion
 
@@ -1903,7 +1918,7 @@ namespace Qube7.Composite
             /// <param name="contractName">The contract name of the event to raise.</param>
             /// <param name="sender">The source of the event.</param>
             /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
-            public void Raise<T>(string contractName, object sender, T e) where T : EventArgs
+            public void Raise<T>(string contractName, object sender, T e)
             {
                 ContractBasedImportDefinition definition = new ContractBasedImportDefinition(contractName, null, null, ImportCardinality.ZeroOrMore, false, false, CreationPolicy.Shared);
 
@@ -1918,10 +1933,9 @@ namespace Qube7.Composite
                     {
                         foreach (Export export in controller.container.root.GetExports(definition))
                         {
-                            ExportedDelegate exported = export.Value as ExportedDelegate;
-                            if (exported != null)
+                            if (export.Value is ExportedDelegate exported)
                             {
-                                if (dispatch && export.Metadata.TryGetValue(RequiresUIThreadMetadataName, out object value) && value is bool && (bool)value)
+                                if (dispatch && export.Metadata.TryGetValue(MetadataName.RequiresUIThread, out object value) && value is bool && (bool)value)
                                 {
                                     if (list2 == null)
                                     {
@@ -1946,33 +1960,116 @@ namespace Qube7.Composite
 
                 if (list1 != null)
                 {
-                    for (int i = 0; i < list1.Count; i++)
-                    {
-                        Action<object, T> action = list1[i].CreateDelegate(typeof(Delegate)) as Action<object, T>;
-                        if (action != null)
-                        {
-                            action(sender, e);
-                        }
-                    }
+                    DeliverEvent(sender, e, list1);
                 }
 
                 if (list2 != null)
                 {
-                    List<Action<object, T>> list = new List<Action<object, T>>();
-
-                    for (int i = 0; i < list2.Count; i++)
-                    {
-                        Action<object, T> action = list2[i].CreateDelegate(typeof(Delegate)) as Action<object, T>;
-                        if (action != null)
-                        {
-                            list.Add(action);
-                        }
-                    }
+                    List<Action<object, T>> list = FromExported<T>(list2);
 
                     if (list.Count > 0)
                     {
-                        UIThread.Invoke(() => DeliverEvent(sender, e, list));
+                        UIThread.Invoke(() => DeliverEvent(sender, e, list), DispatcherPriority.Normal);
                     }
+                }
+            }
+
+            /// <summary>
+            /// Raises the event that matches the specified contract name.
+            /// </summary>
+            /// <typeparam name="T">The type of the event data.</typeparam>
+            /// <param name="contractName">The contract name of the event to raise.</param>
+            /// <param name="sender">The source of the event.</param>
+            /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
+            /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+            /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+            public async Task RaiseAsync<T>(string contractName, object sender, T e, CancellationToken cancellationToken = default)
+            {
+                ContractBasedImportDefinition definition = new ContractBasedImportDefinition(contractName, null, null, ImportCardinality.ZeroOrMore, false, false, CreationPolicy.Shared);
+
+                List<ExportedDelegate> list1 = null;
+                List<ExportedDelegate> list2 = null;
+
+                using (Sync.Read())
+                {
+                    if (controller.container != null)
+                    {
+                        foreach (Export export in controller.container.root.GetExports(definition))
+                        {
+                            if (export.Value is ExportedDelegate exported)
+                            {
+                                if (export.Metadata.TryGetValue(MetadataName.RequiresUIThread, out object value) && value is bool && (bool)value)
+                                {
+                                    if (list2 == null)
+                                    {
+                                        list2 = new List<ExportedDelegate>();
+                                    }
+
+                                    list2.Add(exported);
+
+                                    continue;
+                                }
+
+                                if (list1 == null)
+                                {
+                                    list1 = new List<ExportedDelegate>();
+                                }
+
+                                list1.Add(exported);
+                            }
+                        }
+                    }
+                }
+
+                if (list1 != null)
+                {
+                    await Task.Run(() => DeliverEvent(sender, e, list1, cancellationToken), cancellationToken);
+                }
+
+                if (list2 != null)
+                {
+                    List<Action<object, T>> list = FromExported<T>(list2);
+
+                    if (list.Count > 0)
+                    {
+                        await UIThread.InvokeAsync(() => DeliverEvent(sender, e, list, cancellationToken), DispatcherPriority.Normal, cancellationToken);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Returns the collection of handler delegates retrieved from the specified collection of <see cref="ExportedDelegate"/> objects.
+            /// </summary>
+            /// <typeparam name="T">The type of the event data.</typeparam>
+            /// <param name="source">The collection from which to retrieve the handler delegates.</param>
+            /// <returns>The collection of handler delegates retrieved from the <paramref name="source"/>.</returns>
+            private static List<Action<object, T>> FromExported<T>(List<ExportedDelegate> source)
+            {
+                List<Action<object, T>> list = new List<Action<object, T>>();
+
+                for (int i = 0; i < source.Count; i++)
+                {
+                    if (source[i].CreateDelegate(typeof(Delegate)) is Action<object, T> action)
+                    {
+                        list.Add(action);
+                    }
+                }
+
+                return list;
+            }
+
+            /// <summary>
+            /// Delivers the event to each subscription in the specified list.
+            /// </summary>
+            /// <typeparam name="T">The type of the event data.</typeparam>
+            /// <param name="sender">The source of the event.</param>
+            /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
+            /// <param name="list">The subscriptions to receive the event.</param>
+            private static void DeliverEvent<T>(object sender, T e, List<Action<object, T>> list)
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    list[i](sender, e);
                 }
             }
 
@@ -1982,22 +2079,55 @@ namespace Qube7.Composite
             /// <typeparam name="T">The type of the event data.</typeparam>
             /// <param name="sender">The source of the event.</param>
             /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
-            /// <param name="list">The subscriptions that receive the event.</param>
-            private static void DeliverEvent<T>(object sender, T e, List<Action<object, T>> list) where T : EventArgs
+            /// <param name="list">The subscriptions to receive the event.</param>
+            /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+            private static void DeliverEvent<T>(object sender, T e, List<Action<object, T>> list, CancellationToken cancellationToken)
             {
                 for (int i = 0; i < list.Count; i++)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     list[i](sender, e);
                 }
             }
 
             /// <summary>
-            /// Returns the exported object the export provides.
+            /// Delivers the event to each matching subscription in the specified list.
             /// </summary>
-            /// <returns>The exported object the export provides.</returns>
-            protected override object GetExportedValueCore()
+            /// <typeparam name="T">The type of the event data.</typeparam>
+            /// <param name="sender">The source of the event.</param>
+            /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
+            /// <param name="list">The subscriptions to receive the event.</param>
+            private static void DeliverEvent<T>(object sender, T e, List<ExportedDelegate> list)
             {
-                return this;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (list[i].CreateDelegate(typeof(Delegate)) is Action<object, T> action)
+                    {
+                        action(sender, e);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Delivers the event to each matching subscription in the specified list.
+            /// </summary>
+            /// <typeparam name="T">The type of the event data.</typeparam>
+            /// <param name="sender">The source of the event.</param>
+            /// <param name="e">An <typeparamref name="T"/> that contains the event data.</param>
+            /// <param name="list">The subscriptions to receive the event.</param>
+            /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+            private static void DeliverEvent<T>(object sender, T e, List<ExportedDelegate> list, CancellationToken cancellationToken)
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (list[i].CreateDelegate(typeof(Delegate)) is Action<object, T> action)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        action(sender, e);
+                    }
+                }
             }
 
             #endregion

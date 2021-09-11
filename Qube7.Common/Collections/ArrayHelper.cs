@@ -3,7 +3,7 @@
 namespace Qube7.Collections
 {
     /// <summary>
-    /// Provides helpers for the arrays.
+    /// Provides helper methods for manipulating arrays.
     /// </summary>
     public static class ArrayHelper
     {
@@ -45,11 +45,10 @@ namespace Qube7.Collections
         public static T[] Insert<T>(T[] array, int index, T value)
         {
             Requires.NotNull(array, nameof(array));
-            Requires.NonNegative(index, nameof(index));
 
-            if (index > array.Length)
+            if (index < 0 || index > array.Length)
             {
-                throw Error.Argument(Strings.IndexGreaterLength);
+                throw Error.ArgumentOutOfRange(Strings.IndexRangeArray, nameof(index));
             }
 
             if (array.Length > 0)
@@ -116,11 +115,10 @@ namespace Qube7.Collections
         public static T[] RemoveAt<T>(T[] array, int index)
         {
             Requires.NotNull(array, nameof(array));
-            Requires.NonNegative(index, nameof(index));
 
-            if (index >= array.Length)
+            if (index < 0 || index >= array.Length)
             {
-                throw Error.Argument(Strings.IndexGreaterEqualLength);
+                throw Error.ArgumentOutOfRange(Strings.IndexRangeArray, nameof(index));
             }
 
             if (array.Length > 1)
@@ -154,17 +152,15 @@ namespace Qube7.Collections
         public static T[] RemoveRange<T>(T[] array, int index, int count)
         {
             Requires.NotNull(array, nameof(array));
-            Requires.NonNegative(index, nameof(index));
-            Requires.NonNegative(count, nameof(count));
 
-            if (index >= array.Length)
+            if (index < 0 || index >= array.Length)
             {
-                throw Error.Argument(Strings.IndexGreaterEqualLength);
+                throw Error.ArgumentOutOfRange(Strings.IndexRangeArray, nameof(index));
             }
 
-            if (count > array.Length - index)
+            if (count < 0 || count > array.Length - index)
             {
-                throw Error.Argument(Strings.OffsetLengthInvalid);
+                throw Error.ArgumentOutOfRange(Strings.CountRangeArray, nameof(count));
             }
 
             if (array.Length > count)

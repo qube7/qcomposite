@@ -27,7 +27,7 @@ namespace Qube7.Composite.Data
         /// <summary>
         /// The property changed event handler.
         /// </summary>
-        private PropertyChangedEventHandler changed;
+        private PropertyChangedEventHandler propertyChanged;
 
         #endregion
 
@@ -63,8 +63,8 @@ namespace Qube7.Composite.Data
         /// </summary>
         event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
         {
-            add { Event.Subscribe(ref changed, value); }
-            remove { Event.Unsubscribe(ref changed, value); }
+            add { Event.Subscribe(ref propertyChanged, value); }
+            remove { Event.Unsubscribe(ref propertyChanged, value); }
         }
 
         #endregion
@@ -113,11 +113,9 @@ namespace Qube7.Composite.Data
         {
             ResourceProvider[] providers = table.Select(p => p.Value).ToArray();
 
-            PropertyChangedEventArgs args = new PropertyChangedEventArgs(string.Empty);
-
             for (int i = 0; i < providers.Length; i++)
             {
-                providers[i].OnPropertyChanged(args);
+                providers[i].OnPropertyChanged(EventArgsCache.ObjectPropertyChanged);
             }
         }
 
@@ -127,7 +125,7 @@ namespace Qube7.Composite.Data
         /// <param name="e">The <see cref="PropertyChangedEventArgs"/> instance containing the event data.</param>
         private void OnPropertyChanged(PropertyChangedEventArgs e)
         {
-            Event.Raise(changed, this, e);
+            Event.Raise(propertyChanged, this, e);
         }
 
         #endregion

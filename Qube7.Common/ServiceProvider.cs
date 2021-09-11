@@ -3,7 +3,7 @@
 namespace Qube7
 {
     /// <summary>
-    /// Provides helpers for the <see cref="IServiceProvider"/>.
+    /// Provides extension methods for the <see cref="IServiceProvider"/>.
     /// </summary>
     public static class ServiceProvider
     {

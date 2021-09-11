@@ -61,8 +61,7 @@ namespace Qube7.Composite.Data
         /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            BindingProxy proxy = d as BindingProxy;
-            if (proxy != null)
+            if (d is BindingProxy proxy)
             {
                 proxy.OnValueChanged(e);
             }

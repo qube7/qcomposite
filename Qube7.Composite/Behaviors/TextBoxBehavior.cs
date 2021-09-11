@@ -35,8 +35,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnSelectAllOnGotFocusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            TextBoxBase textBox = d as TextBoxBase;
-            if (textBox != null)
+            if (d is TextBoxBase textBox)
             {
                 if (e.NewValue is bool && (bool)e.NewValue)
                 {
@@ -56,9 +55,10 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="RoutedEventArgs"/> that contains the event data.</param>
         private static void OnTextBoxGotFocus(object sender, RoutedEventArgs e)
         {
-            TextBoxBase textBox = sender as TextBoxBase;
-
-            textBox?.SelectAll();
+            if (sender is TextBoxBase textBox)
+            {
+                textBox.SelectAll();
+            }
         }
 
         /// <summary>
@@ -68,8 +68,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnUpdateTextOnEnterChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            TextBox textBox = d as TextBox;
-            if (textBox != null)
+            if (d is TextBox textBox)
             {
                 if (e.NewValue is bool && (bool)e.NewValue)
                 {
@@ -89,15 +88,11 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="KeyEventArgs"/> that contains the event data.</param>
         private static void OnTextBoxKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (e.Key == Key.Enter && sender is TextBox textBox)
             {
-                TextBox textBox = sender as TextBox;
-                if (textBox != null)
-                {
-                    BindingExpression expression = textBox.GetBindingExpression(TextBox.TextProperty);
+                BindingExpression expression = textBox.GetBindingExpression(TextBox.TextProperty);
 
-                    expression?.UpdateSource();
-                }
+                expression?.UpdateSource();
             }
         }
 

@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
+  <TemplateData>
+    <Name>Controller</Name>
+    <Description>Controller class</Description>
+    <Icon>Icon.png</Icon>
+    <TemplateID>QComposite.CSharp.Controller</TemplateID>
+    <ProjectType>CSharp</ProjectType>
+    <AppliesTo>WPF + CSharp</AppliesTo>
+    <SortOrder>90</SortOrder>
+    <NumberOfParentCategoriesToRollUp>0</NumberOfParentCategoriesToRollUp>
+    <DefaultName>Controller.cs</DefaultName>
+  </TemplateData>
+  <TemplateContent>
+    <CustomParameters>
+      <CustomParameter Name="$safename$" Value="Name" />
+      <CustomParameter Name="$name$" Value="Name" />
+      <CustomParameter Name="$safecontroller$" Value="Controller" />
+      <CustomParameter Name="$controller$" Value="Controller" />
+    </CustomParameters>
+    <ProjectItem ReplaceParameters="true" TargetFileName="$controller$.cs">Controller.cs</ProjectItem>
+    <ProjectItem ReplaceParameters="true" TargetFileName="$safename$\_$name$.cs">_Controller.cs</ProjectItem>
+  </TemplateContent>
+  <WizardExtension>
+    <Assembly>Qube7.Composite.Design, Version=2.2.0.0, Culture=neutral, PublicKeyToken=104de0b32659fb49</Assembly>
+    <FullClassName>Qube7.Composite.Design.Wizards.Controller</FullClassName>
+  </WizardExtension>
+</VSTemplate>

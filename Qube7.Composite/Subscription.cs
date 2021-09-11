@@ -13,12 +13,12 @@ namespace Qube7.Composite
         /// <summary>
         /// The empty parameterless method delegate.
         /// </summary>
-        private static readonly Action void0 = Void0;
+        private static readonly Action Void0 = Empty;
 
         /// <summary>
         /// The empty single-parameter method delegate.
         /// </summary>
-        private static readonly Action<object> void1 = Void1;
+        private static readonly Action<object> Void1 = Empty;
 
         #endregion
 
@@ -27,7 +27,7 @@ namespace Qube7.Composite
         /// <summary>
         /// Represents an empty parameterless method.
         /// </summary>
-        private static void Void0()
+        private static void Empty()
         {
         }
 
@@ -35,7 +35,7 @@ namespace Qube7.Composite
         /// Represents an empty single-parameter method.
         /// </summary>
         /// <param name="obj">The parameter of the method.</param>
-        private static void Void1(object obj)
+        private static void Empty(object obj)
         {
         }
 
@@ -138,7 +138,7 @@ namespace Qube7.Composite
             {
                 if (callback == action)
                 {
-                    action = void0;
+                    action = Void0;
 
                     return true;
                 }
@@ -198,7 +198,7 @@ namespace Qube7.Composite
             {
                 if (callback == action)
                 {
-                    action = void1;
+                    action = Void1;
 
                     return true;
                 }
@@ -269,7 +269,7 @@ namespace Qube7.Composite
             {
                 if (propertyName == name && callback == action)
                 {
-                    action = void0;
+                    action = Void0;
 
                     return true;
                 }
@@ -340,7 +340,7 @@ namespace Qube7.Composite
             {
                 if (propertyName == name && callback == action)
                 {
-                    action = void1;
+                    action = Void1;
 
                     return true;
                 }

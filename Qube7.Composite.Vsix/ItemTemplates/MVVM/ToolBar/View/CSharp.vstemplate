@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
+  <TemplateData>
+    <Name>View (MVVM/ToolBar)</Name>
+    <Description>View component of the MVVM for the ToolBar region</Description>
+    <Icon>Icon.png</Icon>
+    <TemplateID>QComposite.CSharp.View.ToolBar</TemplateID>
+    <ProjectType>CSharp</ProjectType>
+    <AppliesTo>WPF + CSharp</AppliesTo>
+    <SortOrder>88</SortOrder>
+    <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
+    <DefaultName>View.xaml</DefaultName>
+  </TemplateData>
+  <TemplateContent>
+    <CustomParameters>
+      <CustomParameter Name="$safeviewmodel$" Value="ViewModel" />
+    </CustomParameters>
+    <ProjectItem ReplaceParameters="true" CustomTool="MSBuild:Compile">View.xaml</ProjectItem>
+    <ProjectItem ReplaceParameters="true" SubType="Code" TargetFileName="$fileinputname$.xaml.cs">View.xaml.cs</ProjectItem>
+    <ProjectItem ReplaceParameters="true" TargetFileName="$fileinputname$.resx">View.resx</ProjectItem>
+  </TemplateContent>
+  <WizardExtension>
+    <Assembly>Qube7.Composite.Design, Version=2.2.0.0, Culture=neutral, PublicKeyToken=104de0b32659fb49</Assembly>
+    <FullClassName>Qube7.Composite.Design.Wizards.View</FullClassName>
+  </WizardExtension>
+</VSTemplate>

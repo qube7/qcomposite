@@ -31,7 +31,7 @@ namespace Qube7.ComponentModel
         /// <value><c>true</c> if the event is marked for cancellation; otherwise, <c>false</c>.</value>
         public bool IsCanceled
         {
-            get { return Variable.Equals1(ref canceled); }
+            get { return ValueSafe.Equals1(ref canceled); }
         }
 
         #endregion
@@ -65,7 +65,7 @@ namespace Qube7.ComponentModel
         {
             if (CanCancel)
             {
-                Variable.Increment0(ref canceled);
+                ValueSafe.Increment0(ref canceled);
 
                 return;
             }

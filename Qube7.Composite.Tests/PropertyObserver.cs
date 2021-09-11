@@ -289,16 +289,16 @@ namespace Qube7.Composite
 
             ISubscriber<Sample> observe = observer.Observe(sample);
 
-            Action callback = () => { Assert.Fail(); };
+            observe.Subscribe(nameof(Sample.Prop1), Fail);
 
-            observe.Subscribe(nameof(Sample.Prop1), callback);
-
-            ISubscriber<Sample> subscriber = observe.Unsubscribe(nameof(Sample.Prop1), callback);
+            ISubscriber<Sample> subscriber = observe.Unsubscribe(nameof(Sample.Prop1), Fail);
 
             sample.Prop1 = "Value";
             sample.Prop2 = "Value";
 
             Assert.AreSame(observe, subscriber);
+
+            static void Fail() { Assert.Fail(); }
         }
 
         [TestMethod]
@@ -311,16 +311,16 @@ namespace Qube7.Composite
 
             ISubscriber<Sample> observe = observer.Observe(sample);
 
-            Action<Sample> callback = s => { Assert.Fail(); };
+            observe.Subscribe(nameof(Sample.Prop1), Fail);
 
-            observe.Subscribe(nameof(Sample.Prop1), callback);
-
-            ISubscriber<Sample> subscriber = observe.Unsubscribe(nameof(Sample.Prop1), callback);
+            ISubscriber<Sample> subscriber = observe.Unsubscribe(nameof(Sample.Prop1), Fail);
 
             sample.Prop1 = "Value";
             sample.Prop2 = "Value";
 
             Assert.AreSame(observe, subscriber);
+
+            static void Fail(Sample s) { Assert.Fail(); }
         }
 
         [TestMethod]
@@ -404,23 +404,13 @@ namespace Qube7.Composite
             public string Prop1
             {
                 get { return prop1; }
-                set
-                {
-                    prop1 = value;
-
-                    NotifyChanged(nameof(Prop1));
-                }
+                set { Set(ref prop1, value); }
             }
 
             public string Prop2
             {
                 get { return prop2; }
-                set
-                {
-                    prop2 = value;
-
-                    NotifyChanged(nameof(Prop2));
-                }
+                set { Set(ref prop2, value); }
             }
 
             #endregion

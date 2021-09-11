@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Qube7.Collections
 {
     /// <summary>
-    /// Provides helpers for the <see cref="IList{T}"/>.
+    /// Provides extension methods for the <see cref="IList{T}"/>.
     /// </summary>
     public static class List
     {
@@ -28,7 +29,7 @@ namespace Qube7.Collections
                 throw Error.ArgumentOutOfRange(Strings.IndexRangeList, nameof(index));
             }
 
-            if (count < 0 || index > list.Count - count)
+            if (count < 0 || count > list.Count - index)
             {
                 throw Error.ArgumentOutOfRange(Strings.CountRangeList, nameof(count));
             }
@@ -102,6 +103,17 @@ namespace Qube7.Collections
         public static int IndexOf<T>(this IList<T> list, T item, int index)
         {
             return IndexOf(list, item, index, null);
+        }
+
+        /// <summary>
+        /// Returns a read-only wrapper around the <see cref="IList{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <param name="list">The list to wrap.</param>
+        /// <returns>A <see cref="ReadOnlyCollection{T}"/> wrapper.</returns>
+        public static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> list)
+        {
+            return list as ReadOnlyCollection<T> ?? new ReadOnlyCollection<T>(list);
         }
 
         #endregion

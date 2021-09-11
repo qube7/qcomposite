@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Project" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
+  <TemplateData>
+    <Name>QComposite Module</Name>
+    <Description>QComposite-based module</Description>
+    <Icon>Icon.png</Icon>
+    <TemplateID>QComposite.CSharp.Module</TemplateID>
+    <ProjectType>CSharp</ProjectType>
+    <SortOrder>6</SortOrder>
+    <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
+    <CreateNewFolder>true</CreateNewFolder>
+    <DefaultName>QMod</DefaultName>
+    <ProvideDefaultName>true</ProvideDefaultName>
+    <PromptForSaveOnCreation>false</PromptForSaveOnCreation>
+    <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
+    <CreateInPlace>true</CreateInPlace>
+    <LanguageTag>CSharp</LanguageTag>
+    <PlatformTag>Windows</PlatformTag>
+    <ProjectTypeTag>Desktop</ProjectTypeTag>
+  </TemplateData>
+  <TemplateContent>
+    <Project File="Module.csproj" ReplaceParameters="true">
+      <ProjectItem ReplaceParameters="true">Controllers\Startup\_Startup.cs</ProjectItem>
+      <ProjectItem ReplaceParameters="true">Controllers\StartupController.cs</ProjectItem>
+      <ProjectItem ReplaceParameters="true">Properties\AssemblyInfo.cs</ProjectItem>
+      <ProjectItem ReplaceParameters="true">Properties\DesignTimeResources.xaml</ProjectItem>
+      <ProjectItem ReplaceParameters="true">AppModule.cs</ProjectItem>
+      <Folder Name="Models" />
+    </Project>
+  </TemplateContent>
+</VSTemplate>

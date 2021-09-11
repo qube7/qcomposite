@@ -14,7 +14,7 @@ namespace Qube7.ComponentModel
     /// <typeparam name="T">The type of the event data.</typeparam>
     /// <typeparam name="TEvent">The weak event implementing type.</typeparam>
     /// <threadsafety static="true" instance="true"/>
-    public abstract class WeakEvent<TSource, T, TEvent> where TSource : class where T : EventArgs where TEvent : WeakEvent<TSource, T, TEvent>, new()
+    public abstract class WeakEvent<TSource, T, TEvent> where TSource : class where TEvent : WeakEvent<TSource, T, TEvent>, new()
     {
         #region Fields
 
@@ -283,7 +283,7 @@ namespace Qube7.ComponentModel
         /// <param name="threshold">The collection count threshold.</param>
         private void ScheduleCleanup(int threshold)
         {
-            if (Variable.LessExchange(ref gen1, int.MaxValue, threshold) < threshold)
+            if (ValueSafe.LessExchange(ref gen1, int.MaxValue, threshold) < threshold)
             {
                 Async.Start(Cleanup, source);
             }

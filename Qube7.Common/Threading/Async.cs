@@ -4,7 +4,7 @@ using System.Threading;
 namespace Qube7.Threading
 {
     /// <summary>
-    /// Provides helpers for executing asynchronous operations.
+    /// Provides helper methods for executing asynchronous operations.
     /// </summary>
     public static class Async
     {

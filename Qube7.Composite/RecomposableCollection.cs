@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using Qube7.Collections;
 
 namespace Qube7.Composite
@@ -35,6 +36,11 @@ namespace Qube7.Composite
         /// The property changed event handler.
         /// </summary>
         private PropertyChangedEventHandler propertyChanged;
+
+        /// <summary>
+        /// The current recomposition.
+        /// </summary>
+        private Recomposition recomposition;
 
         #endregion
 
@@ -120,130 +126,139 @@ namespace Qube7.Composite
         #region Methods
 
         /// <summary>
-        /// Synchronizes elements of current <see cref="RecomposableCollection{T}"/> with the elements of the specified <see cref="IEnumerable{T}"/>.
+        /// Synchronizes the <see cref="RecomposableCollection{T}"/> with the elements in the specified sequence.
         /// </summary>
-        /// <param name="source">The replacement <see cref="IEnumerable{T}"/>.</param>
+        /// <param name="source">The sequence of replacement elements.</param>
         public void Recompose(IEnumerable<T> source)
         {
             Requires.NotNull(source, nameof(source));
 
             T[] array = source.ToArray();
 
-            if (array.Length == 0)
+            using (Recomposition recomposition = new Recomposition(this))
             {
-                if (collection.Count > 0)
+                if (array.Length == 0)
                 {
-                    T[] items = collection.ToArray();
+                    if (collection.Count > 0)
+                    {
+                        T[] items = collection.ToArray();
 
-                    collection.Clear();
+                        collection.Clear();
 
-                    OnRecomposed(new RecomposedEventArgs<T>(Array.Empty<T>(), Array.AsReadOnly(items)));
+                        recomposition.Dispose();
+
+                        OnRecomposed(new RecomposedEventArgs<T>(Array.Empty<T>(), Array.AsReadOnly(items)));
+                    }
+
+                    return;
                 }
 
-                return;
-            }
+                List<T> list = new List<T>(array);
 
-            List<T> list = new List<T>(array);
+                List<int> indexes = new List<int>();
 
-            List<int> indexes = new List<int>();
-
-            for (int i = 0; i < collection.Count; i++)
-            {
-                if (list.Count > 0)
+                for (int i = 0; i < collection.Count; i++)
                 {
-                    int index = list.IndexOf(collection[i], comparer);
-                    if (index < 0)
+                    if (list.Count > 0)
                     {
-                        indexes.Add(i);
+                        int index = list.IndexOf(collection[i], comparer);
+                        if (index < 0)
+                        {
+                            indexes.Add(i);
+
+                            continue;
+                        }
+
+                        list.RemoveAt(index);
 
                         continue;
                     }
 
-                    list.RemoveAt(index);
-
-                    continue;
+                    indexes.Add(i);
                 }
 
-                indexes.Add(i);
-            }
-
-            if (indexes.Count == collection.Count)
-            {
-                T[] items = Array.Empty<T>();
-
-                if (collection.Count > 0)
+                if (indexes.Count == collection.Count)
                 {
-                    items = collection.ToArray();
+                    T[] items = Array.Empty<T>();
 
-                    collection.Clear();
+                    if (collection.Count > 0)
+                    {
+                        items = collection.ToArray();
+
+                        collection.Clear();
+                    }
+
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        collection.Add(array[i]);
+                    }
+
+                    recomposition.Dispose();
+
+                    OnRecomposed(new RecomposedEventArgs<T>(Array.AsReadOnly(array), Array.AsReadOnly(items)));
+
+                    return;
+                }
+
+                List<T> added = new List<T>();
+                List<T> removed = new List<T>();
+
+                for (int i = indexes.Count - 1; i >= 0; i--)
+                {
+                    T item = collection[indexes[i]];
+
+                    collection.RemoveAt(indexes[i]);
+
+                    removed.Insert(0, item);
                 }
 
                 for (int i = 0; i < array.Length; i++)
                 {
-                    collection.Add(array[i]);
-                }
-
-                OnRecomposed(new RecomposedEventArgs<T>(Array.AsReadOnly(array), Array.AsReadOnly(items)));
-
-                return;
-            }
-
-            List<T> added = new List<T>();
-            List<T> removed = new List<T>();
-
-            for (int i = indexes.Count - 1; i >= 0; i--)
-            {
-                T item = collection[indexes[i]];
-
-                collection.RemoveAt(indexes[i]);
-
-                removed.Insert(0, item);
-            }
-
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (i < collection.Count)
-                {
-                    if (comparer.Equals(array[i], collection[i]))
+                    if (i < collection.Count)
                     {
+                        if (comparer.Equals(array[i], collection[i]))
+                        {
+                            continue;
+                        }
+
+                        if (i < collection.Count - 1)
+                        {
+                            int index = collection.IndexOf(array[i], i + 1, comparer);
+                            if (index > 0)
+                            {
+                                collection.Move(index, i);
+
+                                continue;
+                            }
+                        }
+
+                        collection.Insert(i, array[i]);
+
+                        added.Add(array[i]);
+
                         continue;
                     }
 
-                    if (i < collection.Count - 1)
-                    {
-                        int index = collection.IndexOf(array[i], i + 1, comparer);
-                        if (index > 0)
-                        {
-                            collection.Move(index, i);
-
-                            continue;
-                        }
-                    }
-
-                    collection.Insert(i, array[i]);
+                    collection.Add(array[i]);
 
                     added.Add(array[i]);
-
-                    continue;
                 }
 
-                collection.Add(array[i]);
+                while (collection.Count > array.Length)
+                {
+                    T item = collection[array.Length];
 
-                added.Add(array[i]);
-            }
+                    collection.RemoveAt(array.Length);
 
-            while (collection.Count > array.Length)
-            {
-                T item = collection[array.Length];
+                    removed.Add(item);
+                }
 
-                collection.RemoveAt(array.Length);
+                if (added.Count > 0 || removed.Count > 0)
+                {
+                    recomposition.Dispose();
 
-                removed.Add(item);
-            }
-
-            if (added.Count > 0 || removed.Count > 0)
-            {
-                OnRecomposed(new RecomposedEventArgs<T>(added.AsReadOnly(), removed.AsReadOnly()));
+                    OnRecomposed(new RecomposedEventArgs<T>(added.AsReadOnly(), removed.AsReadOnly()));
+                }
             }
         }
 
@@ -292,6 +307,60 @@ namespace Qube7.Composite
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
         {
             Event.Raise(propertyChanged, this, e);
+        }
+
+        #endregion
+
+        #region Nested types
+
+        /// <summary>
+        /// Represents an object that synchronizes the recomposition updates.
+        /// </summary>
+        private class Recomposition : IDisposable
+        {
+            #region Fields
+
+            /// <summary>
+            /// The underlying collection.
+            /// </summary>
+            private RecomposableCollection<T> collection;
+
+            #endregion
+
+            #region Constructors
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Recomposition"/> class.
+            /// </summary>
+            /// <param name="collection">The underlying collection.</param>
+            internal Recomposition(RecomposableCollection<T> collection)
+            {
+                this.collection = collection;
+
+                if (Interlocked.CompareExchange(ref collection.recomposition, this, null) != null)
+                {
+                    throw new InvalidOperationException(Strings.CollectionRecomposing);
+                }
+            }
+
+            #endregion
+
+            #region Methods
+
+            /// <summary>
+            /// Exits the current recomposition update.
+            /// </summary>
+            public void Dispose()
+            {
+                if (collection != null)
+                {
+                    Interlocked.Exchange(ref collection.recomposition, null);
+
+                    collection = null;
+                }
+            }
+
+            #endregion
         }
 
         #endregion

@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Qube7
 {
     /// <summary>
-    /// Creates the common exception instances.
+    /// Creates the common error exception objects.
     /// </summary>
     public static class Error
     {
@@ -64,15 +63,6 @@ namespace Qube7
         }
 
         /// <summary>
-        /// Creates the <see cref="KeyNotFoundException"/> instance.
-        /// </summary>
-        /// <returns>The <see cref="KeyNotFoundException"/> instance.</returns>
-        public static KeyNotFoundException KeyNotFound()
-        {
-            return new KeyNotFoundException();
-        }
-
-        /// <summary>
         /// Creates the <see cref="InvalidOperationException"/> instance.
         /// </summary>
         /// <param name="message">A message that describes the error.</param>
@@ -116,7 +106,7 @@ namespace Qube7
         /// <typeparam name="T">The type of the object.</typeparam>
         /// <param name="instance">The disposed object.</param>
         /// <returns>The <see cref="ObjectDisposedException"/> instance.</returns>
-        public static ObjectDisposedException ObjectDisposed<T>(T instance)
+        public static ObjectDisposedException ObjectDisposed<T>(T instance) where T : class
         {
             Requires.NotNull(instance, nameof(instance));
 
@@ -153,7 +143,7 @@ namespace Qube7
         {
             Requires.NotNullOrEmpty(memberName, nameof(memberName));
 
-            return new NotImplementedException(Format.Current(Strings.NotOverridden, memberName));
+            return new NotImplementedException(string.Format(Strings.NotOverridden, memberName));
         }
 
         /// <summary>
@@ -165,7 +155,7 @@ namespace Qube7
         {
             Requires.NotNullOrEmpty(memberName, nameof(memberName));
 
-            return new InvalidOperationException(Format.Current(Strings.ReturnsNull, memberName));
+            return new InvalidOperationException(string.Format(Strings.ReturnsNull, memberName));
         }
 
         /// <summary>
@@ -179,7 +169,7 @@ namespace Qube7
             Requires.NotNull(attributeType, nameof(attributeType));
             Requires.NotNull(attributeProvider, nameof(attributeProvider));
 
-            return new InvalidOperationException(Format.Current(Strings.AttributeNotDefined, attributeType, attributeProvider));
+            return new InvalidOperationException(string.Format(Strings.AttributeNotDefined, attributeType, attributeProvider));
         }
 
         /// <summary>

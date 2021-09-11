@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Windows.Data;
 using Qube7.Collections;
 using Qube7.ComponentModel;
 using Qube7.Threading;
@@ -20,7 +22,7 @@ namespace Qube7.Composite
         /// <summary>
         /// The trace category.
         /// </summary>
-        private const string TraceCategory = "PropertyObserver";
+        private const string TraceCategory = nameof(PropertyObserver);
 
         /// <summary>
         /// The subscribers table.
@@ -42,7 +44,7 @@ namespace Qube7.Composite
         /// <value><c>true</c> if the <see cref="PropertyObserver"/> is disposed; otherwise, <c>false</c>.</value>
         private bool Disposed
         {
-            get { return Variable.Equals1(ref disposed); }
+            get { return ValueSafe.Equals1(ref disposed); }
         }
 
         #endregion
@@ -60,17 +62,6 @@ namespace Qube7.Composite
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Creates a new <see cref="PropertyObserver{T}"/> for the specified source object.
-        /// </summary>
-        /// <typeparam name="T">The type of the source object.</typeparam>
-        /// <param name="source">The source object to observe.</param>
-        /// <returns>A <see cref="PropertyObserver{T}"/> for the <paramref name="source"/>.</returns>
-        public static PropertyObserver<T> Create<T>(T source) where T : class, INotifyPropertyChanged
-        {
-            return new PropertyObserver<T>(source);
-        }
 
         /// <summary>
         /// Returns the property change notification subscriber for the specified source object.
@@ -337,14 +328,20 @@ namespace Qube7.Composite
         /// <summary>
         /// Determines whether the specified source object declares an instance property with the specified name.
         /// </summary>
+        /// <typeparam name="T">The type of the source object.</typeparam>
         /// <param name="source">The source object to validate against.</param>
         /// <param name="propertyName">The name of the property being tested.</param>
         [Conditional("DEBUG")]
-        private void ValidateProperty(object source, string propertyName)
+        private static void ValidateProperty<T>(T source, string propertyName)
         {
-            if (propertyName.Length > 0 && TypeDescriptor.GetProperties(source)[propertyName] == null)
+            if (propertyName.Length > 0 && propertyName != Binding.IndexerName)
             {
-                Trace.WriteLine(Format.Current(Strings.PropertyNotFound, propertyName, source.GetType()), TraceCategory);
+                Type type = source.GetType();
+
+                if (type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance) == null)
+                {
+                    Trace.WriteLine(string.Format(Strings.PropertyNotFound, propertyName, type), TraceCategory);
+                }
             }
         }
 
@@ -353,7 +350,7 @@ namespace Qube7.Composite
         /// </summary>
         private void CheckDisposed()
         {
-            if (Variable.Equals1(ref disposed))
+            if (ValueSafe.Equals1(ref disposed))
             {
                 throw Error.ObjectDisposed(this);
             }
@@ -375,7 +372,7 @@ namespace Qube7.Composite
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing && Variable.Increment0(ref disposed))
+            if (disposing && ValueSafe.Increment0(ref disposed))
             {
                 lock (table)
                 {
@@ -813,8 +810,7 @@ namespace Qube7.Composite
                 /// <param name="e">An <see cref="PropertyChangedEventArgs"/> that contains the event data.</param>
                 public override void OnEvent(object sender, PropertyChangedEventArgs e)
                 {
-                    T source = sender as T;
-                    if (source != null)
+                    if (sender is T source)
                     {
                         string propertyName = e.PropertyName ?? string.Empty;
 

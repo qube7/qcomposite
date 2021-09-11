@@ -20,22 +20,22 @@ namespace Qube7.Composite.Behaviors
         /// <summary>
         /// The minimize window command binding.
         /// </summary>
-        private static readonly CommandBinding minimize = new CommandBinding(SystemCommands.MinimizeWindowCommand, OnMinimizeWindowExecuted, OnMinimizeWindowCanExecute);
+        private static readonly CommandBinding Minimize = new CommandBinding(SystemCommands.MinimizeWindowCommand, OnMinimizeWindowExecuted, OnMinimizeWindowCanExecute);
 
         /// <summary>
         /// The maximize window command binding.
         /// </summary>
-        private static readonly CommandBinding maximize = new CommandBinding(SystemCommands.MaximizeWindowCommand, OnMaximizeWindowExecuted, OnMaximizeWindowCanExecute);
+        private static readonly CommandBinding Maximize = new CommandBinding(SystemCommands.MaximizeWindowCommand, OnMaximizeWindowExecuted, OnMaximizeWindowCanExecute);
 
         /// <summary>
         /// The restore window command binding.
         /// </summary>
-        private static readonly CommandBinding restore = new CommandBinding(SystemCommands.RestoreWindowCommand, OnRestoreWindowExecuted, OnRestoreWindowCanExecute);
+        private static readonly CommandBinding Restore = new CommandBinding(SystemCommands.RestoreWindowCommand, OnRestoreWindowExecuted, OnRestoreWindowCanExecute);
 
         /// <summary>
         /// The close window command binding.
         /// </summary>
-        private static readonly CommandBinding close = new CommandBinding(SystemCommands.CloseWindowCommand, OnCloseWindowExecuted);
+        private static readonly CommandBinding Close = new CommandBinding(SystemCommands.CloseWindowCommand, OnCloseWindowExecuted);
 
         #endregion
 
@@ -48,31 +48,30 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnHandleWindowCommandsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            Window window = d as Window;
-            if (window != null)
+            if (d is Window window)
             {
                 CommandBindingCollection bindings = window.CommandBindings;
 
                 if (e.NewValue is bool && (bool)e.NewValue)
                 {
-                    if (bindings.IndexOf(minimize) == -1)
+                    if (bindings.IndexOf(Minimize) == -1)
                     {
-                        bindings.Add(minimize);
+                        bindings.Add(Minimize);
                     }
 
-                    if (bindings.IndexOf(maximize) == -1)
+                    if (bindings.IndexOf(Maximize) == -1)
                     {
-                        bindings.Add(maximize);
+                        bindings.Add(Maximize);
                     }
 
-                    if (bindings.IndexOf(restore) == -1)
+                    if (bindings.IndexOf(Restore) == -1)
                     {
-                        bindings.Add(restore);
+                        bindings.Add(Restore);
                     }
 
-                    if (bindings.IndexOf(close) == -1)
+                    if (bindings.IndexOf(Close) == -1)
                     {
-                        bindings.Add(close);
+                        bindings.Add(Close);
                     }
 
                     window.StateChanged -= OnWindowStateChanged;
@@ -81,13 +80,13 @@ namespace Qube7.Composite.Behaviors
                     return;
                 }
 
-                bindings.Remove(minimize);
+                bindings.Remove(Minimize);
 
-                bindings.Remove(maximize);
+                bindings.Remove(Maximize);
 
-                bindings.Remove(restore);
+                bindings.Remove(Restore);
 
-                bindings.Remove(close);
+                bindings.Remove(Close);
 
                 window.StateChanged -= OnWindowStateChanged;
             }
@@ -124,9 +123,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="CanExecuteRoutedEventArgs"/> that contains the event data.</param>
         private static void OnMinimizeWindowCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            Window window = sender as Window;
-
-            e.CanExecute = window != null && window.WindowState != WindowState.Minimized && window.ResizeMode != ResizeMode.NoResize;
+            e.CanExecute = sender is Window window && window.WindowState != WindowState.Minimized && window.ResizeMode != ResizeMode.NoResize;
         }
 
         /// <summary>
@@ -136,8 +133,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="ExecutedRoutedEventArgs"/> that contains the event data.</param>
         private static void OnMinimizeWindowExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            Window window = sender as Window;
-            if (window != null)
+            if (sender is Window window)
             {
                 SystemCommands.MinimizeWindow(window);
 
@@ -152,9 +148,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="CanExecuteRoutedEventArgs"/> that contains the event data.</param>
         private static void OnMaximizeWindowCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            Window window = sender as Window;
-
-            e.CanExecute = window != null && window.WindowState != WindowState.Maximized && window.ResizeMode != ResizeMode.NoResize && window.ResizeMode != ResizeMode.CanMinimize;
+            e.CanExecute = sender is Window window && window.WindowState != WindowState.Maximized && window.ResizeMode != ResizeMode.NoResize && window.ResizeMode != ResizeMode.CanMinimize;
         }
 
         /// <summary>
@@ -164,8 +158,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="ExecutedRoutedEventArgs"/> that contains the event data.</param>
         private static void OnMaximizeWindowExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            Window window = sender as Window;
-            if (window != null)
+            if (sender is Window window)
             {
                 SystemCommands.MaximizeWindow(window);
 
@@ -180,9 +173,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="CanExecuteRoutedEventArgs"/> that contains the event data.</param>
         private static void OnRestoreWindowCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            Window window = sender as Window;
-
-            e.CanExecute = window != null && window.WindowState != WindowState.Normal && window.ResizeMode != ResizeMode.NoResize && window.ResizeMode != ResizeMode.CanMinimize;
+            e.CanExecute = sender is Window window && window.WindowState != WindowState.Normal && window.ResizeMode != ResizeMode.NoResize && window.ResizeMode != ResizeMode.CanMinimize;
         }
 
         /// <summary>
@@ -192,8 +183,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="ExecutedRoutedEventArgs"/> that contains the event data.</param>
         private static void OnRestoreWindowExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            Window window = sender as Window;
-            if (window != null)
+            if (sender is Window window)
             {
                 SystemCommands.RestoreWindow(window);
 
@@ -208,8 +198,7 @@ namespace Qube7.Composite.Behaviors
         /// <param name="e">An <see cref="ExecutedRoutedEventArgs"/> that contains the event data.</param>
         private static void OnCloseWindowExecuted(object sender, ExecutedRoutedEventArgs e)
         {
-            Window window = sender as Window;
-            if (window != null)
+            if (sender is Window window)
             {
                 SystemCommands.CloseWindow(window);
 

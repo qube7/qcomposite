@@ -5,132 +5,53 @@ using Qube7.Composite.Threading;
 namespace Qube7.Composite
 {
     /// <summary>
-    /// Provides the <see cref="DispatcherObject"/>/<see cref="IDispatcherObject"/> extension methods.
+    /// Provides extension methods for the <see cref="IDispatcherObject"/>.
     /// </summary>
     public static class DispatcherObjectExtensions
     {
-        #region Fields
-
-        /// <summary>
-        /// The successfully completed operation.
-        /// </summary>
-        [ThreadStatic]
-        private static DispatcherOperation completed;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the operation that has already completed successfully.
-        /// </summary>
-        /// <value>The successfully completed operation.</value>
-        private static DispatcherOperation Completed
-        {
-            get
-            {
-                if (completed == null)
-                {
-                    completed = Dispatcher.CurrentDispatcher.InvokeAsync(Void0);
-
-                    completed.Wait();
-                }
-
-                return completed;
-            }
-        }
-
-        #endregion
-
         #region Methods
 
         /// <summary>
-        /// Represents an empty parameterless method.
+        /// Performs the specified <see cref="Action{T}"/> on the <see cref="IDispatcherObject"/> on the calling thread if it has access to the <see cref="IDispatcherObject"/> or synchronously on the thread the <see cref="IDispatcherObject"/> is associated with.
         /// </summary>
-        private static void Void0()
-        {
-        }
-
-        /// <summary>
-        /// Executes the specified <see cref="Action"/> on the calling thread if it has access to the <see cref="DispatcherObject"/> or synchronously on the thread the <see cref="DispatcherObject"/> is associated with.
-        /// </summary>
+        /// <typeparam name="T">The type of the source dispatcher object.</typeparam>
         /// <param name="obj">The source dispatcher object.</param>
-        /// <param name="callback">A delegate to invoke.</param>
-        public static void Dispatch(this DispatcherObject obj, Action callback)
+        /// <param name="callback">A delegate to perform on <paramref name="obj"/>.</param>
+        public static void Update<T>(this T obj, Action<T> callback) where T : class, IDispatcherObject
         {
             Requires.NotNull(obj, nameof(obj));
             Requires.NotNull(callback, nameof(callback));
 
             if (obj.CheckAccess())
             {
-                callback();
+                callback(obj);
 
                 return;
             }
 
-            obj.Dispatcher.Invoke(callback, DispatcherPriority.Normal);
+            obj.Dispatcher.Invoke(() => callback(obj), DispatcherPriority.Normal);
         }
 
         /// <summary>
-        /// Executes the specified <see cref="Action"/> on the calling thread if it has access to the <see cref="DispatcherObject"/> or asynchronously on the thread the <see cref="DispatcherObject"/> is associated with.
+        /// Performs the specified <see cref="Action{T}"/> on the <see cref="IDispatcherObject"/> on the calling thread if it has access to the <see cref="IDispatcherObject"/> or asynchronously on the thread the <see cref="IDispatcherObject"/> is associated with.
         /// </summary>
+        /// <typeparam name="T">The type of the source dispatcher object.</typeparam>
         /// <param name="obj">The source dispatcher object.</param>
-        /// <param name="callback">A delegate to invoke.</param>
+        /// <param name="callback">A delegate to perform on <paramref name="obj"/>.</param>
         /// <returns>An object that can be used to interact with the delegate as it is pending execution in the event queue.</returns>
-        public static DispatcherOperation DispatchAsync(this DispatcherObject obj, Action callback)
+        public static DispatcherOperation UpdateAsync<T>(this T obj, Action<T> callback) where T : class, IDispatcherObject
         {
             Requires.NotNull(obj, nameof(obj));
             Requires.NotNull(callback, nameof(callback));
 
             if (obj.CheckAccess())
             {
-                callback();
+                callback(obj);
 
-                return Completed;
+                return DispatcherOperationCache.CompletedOperation;
             }
 
-            return obj.Dispatcher.InvokeAsync(callback, DispatcherPriority.Normal);
-        }
-
-        /// <summary>
-        /// Executes the specified <see cref="Action"/> on the calling thread if it has access to the <see cref="IDispatcherObject"/> or synchronously on the thread the <see cref="IDispatcherObject"/> is associated with.
-        /// </summary>
-        /// <param name="obj">The source dispatcher object.</param>
-        /// <param name="callback">A delegate to invoke.</param>
-        public static void Dispatch(this IDispatcherObject obj, Action callback)
-        {
-            Requires.NotNull(obj, nameof(obj));
-            Requires.NotNull(callback, nameof(callback));
-
-            if (obj.CheckAccess())
-            {
-                callback();
-
-                return;
-            }
-
-            obj.Dispatcher.Invoke(callback, DispatcherPriority.Normal);
-        }
-
-        /// <summary>
-        /// Executes the specified <see cref="Action"/> on the calling thread if it has access to the <see cref="IDispatcherObject"/> or asynchronously on the thread the <see cref="IDispatcherObject"/> is associated with.
-        /// </summary>
-        /// <param name="obj">The source dispatcher object.</param>
-        /// <param name="callback">A delegate to invoke.</param>
-        /// <returns>An object that can be used to interact with the delegate as it is pending execution in the event queue.</returns>
-        public static DispatcherOperation DispatchAsync(this IDispatcherObject obj, Action callback)
-        {
-            Requires.NotNull(obj, nameof(obj));
-            Requires.NotNull(callback, nameof(callback));
-
-            if (obj.CheckAccess())
-            {
-                callback();
-
-                return Completed;
-            }
-
-            return obj.Dispatcher.InvokeAsync(callback, DispatcherPriority.Normal);
+            return obj.Dispatcher.InvokeAsync(() => callback(obj), DispatcherPriority.Normal);
         }
 
         #endregion

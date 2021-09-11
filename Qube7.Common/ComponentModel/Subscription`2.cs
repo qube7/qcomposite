@@ -9,7 +9,7 @@ namespace Qube7.ComponentModel
     /// <typeparam name="T">The type of the event data.</typeparam>
     /// <typeparam name="TEvent">The weak event implementing type.</typeparam>
     /// <threadsafety static="true" instance="true"/>
-    public abstract class Subscription<T, TEvent> : IDisposable where T : EventArgs where TEvent : WeakEvent<T, TEvent>, new()
+    public abstract class Subscription<T, TEvent> : IDisposable where TEvent : WeakEvent<T, TEvent>, new()
     {
         #region Fields
 

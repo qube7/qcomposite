@@ -42,16 +42,9 @@ namespace Qube7.Composite.Converters
         /// <returns><see cref="Visibility.Visible"/> if <paramref name="value"/> is <c>true</c>; otherwise, <see cref="Visibility.Collapsed"/>.</returns>
         public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool)
+            if (value is bool && (bool)value)
             {
-                return (bool)value ? VisibilityBox.Visible : VisibilityBox.Collapsed;
-            }
-
-            if (value is bool?)
-            {
-                bool? nullable = (bool?)value;
-
-                return nullable.HasValue && nullable.Value ? VisibilityBox.Visible : VisibilityBox.Collapsed;
+                return VisibilityBox.Visible;
             }
 
             return VisibilityBox.Collapsed;
@@ -67,7 +60,12 @@ namespace Qube7.Composite.Converters
         /// <returns><c>true</c> if <paramref name="value"/> is <see cref="Visibility.Visible"/>; otherwise, <c>false</c>.</returns>
         public override object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value is Visibility && (Visibility)value == Visibility.Visible ? BooleanBox.True : BooleanBox.False;
+            if (value is Visibility && (Visibility)value == Visibility.Visible)
+            {
+                return BooleanBox.True;
+            }
+
+            return BooleanBox.False;
         }
 
         /// <summary>

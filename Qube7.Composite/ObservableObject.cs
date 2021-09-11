@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Qube7.Composite
@@ -14,19 +15,24 @@ namespace Qube7.Composite
         #region Fields
 
         /// <summary>
-        /// Identifies the name of the indexer property.
+        /// Identifies the default name of the compiler-generated indexer property.
         /// </summary>
-        public const string IndexerName = "Item[]";
+        protected const string IndexerName = "Item";
 
         /// <summary>
         /// The trace category.
         /// </summary>
-        private const string TraceCategory = "ObservableObject";
+        private const string TraceCategory = nameof(ObservableObject);
 
         /// <summary>
         /// The property change notification.
         /// </summary>
-        private readonly INotification notification;
+        private readonly IRaiseChanged raiseChanged;
+
+        /// <summary>
+        /// The properties backing store dictionary.
+        /// </summary>
+        private readonly Dictionary<string, object> properties;
 
         #endregion
 
@@ -46,7 +52,9 @@ namespace Qube7.Composite
         /// </summary>
         protected ObservableObject()
         {
-            notification = Notification.FromType(GetType());
+            raiseChanged = RaiseChanged.FromType(GetType());
+
+            properties = new Dictionary<string, object>();
         }
 
         #endregion
@@ -57,10 +65,10 @@ namespace Qube7.Composite
         /// Notifies that object's property value has changed.
         /// </summary>
         /// <param name="propertyName">The name of the property that changed.</param>
-        /// <remarks>The <c>null</c> or <see cref="String.Empty"/> used for the <paramref name="propertyName"/> indicate that all properties on the object have changed.</remarks>
-        protected void NotifyChanged(string propertyName)
+        /// <remarks>The <c>null</c> or <see cref="String.Empty"/> used for the <paramref name="propertyName"/> indicates that all properties on the object have changed.</remarks>
+        protected void NotifyChanged([CallerMemberName] string propertyName = null)
         {
-            OnPropertyChanged(new PropertyChangedEventArgs(propertyName ?? string.Empty));
+            raiseChanged.Raise(this, propertyName);
         }
 
         /// <summary>
@@ -70,7 +78,83 @@ namespace Qube7.Composite
         [EditorBrowsable(EditorBrowsableState.Never)]
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
         {
-            notification.Raise(this, e);
+            Event.Raise(PropertyChanged, this, e);
+        }
+
+        /// <summary>
+        /// Sets the value of the backing field of the property and notifies if the property value has changed.
+        /// </summary>
+        /// <typeparam name="T">The type of the property value.</typeparam>
+        /// <param name="field">The backing field of the property to set.</param>
+        /// <param name="value">The new value of the property to set.</param>
+        /// <param name="propertyName">The name of the property to set.</param>
+        /// <returns><c>true</c> if the property value has changed; otherwise, <c>false</c>.</returns>
+        protected bool Set<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value))
+            {
+                return false;
+            }
+
+            field = value;
+
+            NotifyChanged(propertyName);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the value of the property from the dictionary-based backing store.
+        /// </summary>
+        /// <typeparam name="T">The type of the property value.</typeparam>
+        /// <param name="propertyName">The name of the property to get the value for.</param>
+        /// <returns>The current value of the property.</returns>
+        protected T Get<T>([CallerMemberName] string propertyName = null)
+        {
+            Requires.NotNullOrEmpty(propertyName, nameof(propertyName));
+
+            lock (properties)
+            {
+                if (properties.TryGetValue(propertyName, out object value))
+                {
+                    return (T)value;
+                }
+            }
+
+            return default;
+        }
+
+        /// <summary>
+        /// Sets the value of the property in the dictionary-based backing store and notifies if the property value has changed.
+        /// </summary>
+        /// <typeparam name="T">The type of the property value.</typeparam>
+        /// <param name="value">The new value of the property to set.</param>
+        /// <param name="propertyName">The name of the property to set.</param>
+        /// <returns><c>true</c> if the property value has changed; otherwise, <c>false</c>.</returns>
+        protected bool Set<T>(T value, [CallerMemberName] string propertyName = null)
+        {
+            Requires.NotNullOrEmpty(propertyName, nameof(propertyName));
+
+            lock (properties)
+            {
+                T field = default;
+
+                if (properties.TryGetValue(propertyName, out object current))
+                {
+                    field = (T)current;
+                }
+
+                if (EqualityComparer<T>.Default.Equals(field, value))
+                {
+                    return false;
+                }
+
+                properties[propertyName] = value;
+            }
+
+            NotifyChanged(propertyName);
+
+            return true;
         }
 
         /// <summary>
@@ -80,9 +164,11 @@ namespace Qube7.Composite
         [Conditional("DEBUG")]
         private void ValidateProperty(string propertyName)
         {
-            if (TypeDescriptor.GetProperties(this)[propertyName] == null)
+            Type type = GetType();
+
+            if (type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance) == null)
             {
-                Trace.WriteLine(Format.Current(Strings.PropertyNotFound, propertyName, GetType()), TraceCategory);
+                Trace.WriteLine(string.Format(Strings.PropertyNotFound, propertyName, type), TraceCategory);
             }
         }
 
@@ -91,26 +177,10 @@ namespace Qube7.Composite
         #region Nested types
 
         /// <summary>
-        /// Specifies that the property is dependent on the value of another property.
-        /// </summary>
-        internal interface IDependsOn
-        {
-            #region Properties
-
-            /// <summary>
-            /// Gets the names of the related properties declared in this <see cref="IDependsOn"/>.
-            /// </summary>
-            /// <value>The names of the related properties.</value>
-            string[] Properties { get; }
-
-            #endregion
-        }
-
-        /// <summary>
         /// Indicates that the attributed property is dependent on the value of another property.
         /// </summary>
-        [AttributeUsage(AttributeTargets.Property, Inherited = false)]
-        protected sealed class DependsOnAttribute : Attribute, IDependsOn
+        [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
+        protected class DependsOnAttribute : Attribute
         {
             #region Fields
 
@@ -127,7 +197,7 @@ namespace Qube7.Composite
             /// Gets the names of the related properties declared in this <see cref="DependsOnAttribute"/>.
             /// </summary>
             /// <value>The names of the related properties.</value>
-            public string[] Properties
+            public virtual IEnumerable<string> Properties
             {
                 get { return properties; }
             }
@@ -139,19 +209,26 @@ namespace Qube7.Composite
             /// <summary>
             /// Initializes a new instance of the <see cref="DependsOnAttribute"/> class.
             /// </summary>
+            protected DependsOnAttribute()
+            {
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="DependsOnAttribute"/> class.
+            /// </summary>
             /// <param name="properties">The names of the properties that the property associated with this <see cref="DependsOnAttribute"/> depends on.</param>
             public DependsOnAttribute(params string[] properties)
             {
-                this.properties = properties ?? Array.Empty<string>();
+                this.properties = properties;
             }
 
             #endregion
         }
 
         /// <summary>
-        /// Manages the property change notification of the <see cref="ObservableObject"/>.
+        /// Raises the property change notification for the <see cref="ObservableObject"/>.
         /// </summary>
-        private interface INotification
+        private interface IRaiseChanged
         {
             #region Methods
 
@@ -159,89 +236,103 @@ namespace Qube7.Composite
             /// Raises the property change notification for the specified <see cref="ObservableObject"/>.
             /// </summary>
             /// <param name="observable">The target observable.</param>
-            /// <param name="e">The <see cref="PropertyChangedEventArgs"/> instance containing the event data.</param>
-            void Raise(ObservableObject observable, PropertyChangedEventArgs e);
+            /// <param name="propertyName">The name of the property that changed.</param>
+            void Raise(ObservableObject observable, string propertyName);
 
             #endregion
         }
 
         /// <summary>
-        /// Manages the property change notification of the <see cref="ObservableObject"/>.
+        /// Manages the cached <see cref="IRaiseChanged"/> objects.
         /// </summary>
-        private class Notification : Dictionary<string, string[]>, INotification
+        private static class RaiseChanged
         {
             #region Fields
 
             /// <summary>
-            /// The notification table.
+            /// The change notification table.
             /// </summary>
-            private static readonly ConditionalWeakTable<Type, INotification> table = new ConditionalWeakTable<Type, INotification>();
+            private static readonly ConditionalWeakTable<Type, IRaiseChanged> table = new ConditionalWeakTable<Type, IRaiseChanged>();
 
             #endregion
 
             #region Methods
 
             /// <summary>
-            /// Returns an <see cref="INotification"/> created for the specified target observable type.
+            /// Returns an <see cref="IRaiseChanged"/> created for the specified target observable type.
             /// </summary>
             /// <param name="target">The type of the target observable.</param>
-            /// <returns>The <see cref="INotification"/> for the <paramref name="target"/>.</returns>
-            internal static INotification FromType(Type target)
+            /// <returns>The <see cref="IRaiseChanged"/> for the <paramref name="target"/>.</returns>
+            internal static IRaiseChanged FromType(Type target)
             {
                 return table.GetValue(target, Create);
             }
 
             /// <summary>
-            /// Returns an <see cref="INotification"/> created for the specified target observable type.
+            /// Returns an <see cref="IRaiseChanged"/> created for the specified target observable type.
             /// </summary>
             /// <param name="target">The type of the target observable.</param>
-            /// <returns>The <see cref="INotification"/> for the <paramref name="target"/>.</returns>
-            private static INotification Create(Type target)
+            /// <returns>The <see cref="IRaiseChanged"/> for the <paramref name="target"/>.</returns>
+            private static IRaiseChanged Create(Type target)
             {
+                string indexerName = null;
+
                 Dictionary<string, Entry> dictionary = new Dictionary<string, Entry>();
 
-                PropertyDescriptorCollection collection = TypeDescriptor.GetProperties(target);
+                PropertyInfo[] array = target.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-                for (int i = 0; i < collection.Count; i++)
+                for (int i = 0; i < array.Length; i++)
                 {
                     Entry current = null;
 
-                    string property = collection[i].Name;
+                    PropertyInfo property = array[i];
 
-                    AttributeCollection attributes = collection[i].Attributes;
+                    string propertyName = property.Name;
 
-                    for (int j = 0; j < attributes.Count; j++)
+                    object[] attributes = property.GetCustomAttributes(false);
+
+                    for (int j = 0; j < attributes.Length; j++)
                     {
-                        IDependsOn dependsOn = attributes[j] as IDependsOn;
-                        if (dependsOn != null)
+                        if (attributes[j] is DependsOnAttribute attribute)
                         {
-                            string[] properties = dependsOn.Properties;
+                            IEnumerable<string> properties = attribute.Properties;
 
-                            for (int k = 0; k < properties.Length; k++)
+                            if (properties != null)
                             {
-                                if (string.IsNullOrEmpty(properties[k]) || properties[k] == property)
+                                foreach (string otherName in properties)
                                 {
-                                    continue;
+                                    if (string.IsNullOrEmpty(otherName) || otherName == propertyName)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (current == null)
+                                    {
+                                        current = Entry.Get(propertyName, dictionary);
+                                    }
+
+                                    Entry entry = Entry.Get(otherName, dictionary);
+
+                                    if (entry.Contains(current))
+                                    {
+                                        continue;
+                                    }
+
+                                    entry.Add(current);
                                 }
-
-                                current = current ?? Entry.Get(property, dictionary);
-
-                                Entry entry = Entry.Get(properties[k], dictionary);
-
-                                if (entry.Contains(current))
-                                {
-                                    continue;
-                                }
-
-                                entry.Add(current);
                             }
                         }
+                    }
+
+                    if (indexerName == null && property.GetIndexParameters().Length > 0)
+                    {
+                        indexerName = propertyName;
                     }
                 }
 
                 if (dictionary.Count > 0)
                 {
-                    Notification notification = new Notification();
+                    MappedNotifyChanged mapped = CreateMapped(indexerName);
 
                     foreach (Entry entry in dictionary.Values)
                     {
@@ -249,43 +340,39 @@ namespace Qube7.Composite
 
                         if (properties != null)
                         {
-                            notification.Add(entry.Name, properties);
+                            mapped.Add(entry.Name, properties);
                         }
                     }
 
-                    return notification;
+                    return mapped;
                 }
 
-                return PropertyChanged.Instance;
+                if (indexerName == null)
+                {
+                    return NotifyChanged.Instance;
+                }
+
+                if (indexerName == IndexerName)
+                {
+                    return IndexerNotifyChanged.Default;
+                }
+
+                return new IndexerNotifyChanged(indexerName);
             }
 
             /// <summary>
-            /// Raises the property change notification for the specified <see cref="ObservableObject"/>.
+            /// Creates the <see cref="MappedNotifyChanged"/> for the type that declares the specified indexer property.
             /// </summary>
-            /// <param name="observable">The target observable.</param>
-            /// <param name="e">The <see cref="PropertyChangedEventArgs"/> instance containing the event data.</param>
-            public void Raise(ObservableObject observable, PropertyChangedEventArgs e)
+            /// <param name="indexerName">The name of the indexer property.</param>
+            /// <returns>The <see cref="MappedNotifyChanged"/> for the <paramref name="indexerName"/>.</returns>
+            private static MappedNotifyChanged CreateMapped(string indexerName)
             {
-                if (string.IsNullOrEmpty(e.PropertyName))
+                if (indexerName == null)
                 {
-                    Event.Raise(observable.PropertyChanged, observable, e);
-
-                    return;
+                    return new MappedNotifyChanged();
                 }
 
-                observable.ValidateProperty(e.PropertyName);
-
-                Event.Raise(observable.PropertyChanged, observable, e);
-
-                if (TryGetValue(e.PropertyName, out string[] properties))
-                {
-                    for (int i = 0; i < properties.Length; i++)
-                    {
-                        observable.ValidateProperty(properties[i]);
-
-                        Event.Raise(observable.PropertyChanged, observable, new PropertyChangedEventArgs(properties[i]));
-                    }
-                }
+                return new IndexerMappedNotifyChanged(indexerName);
             }
 
             #endregion
@@ -293,7 +380,7 @@ namespace Qube7.Composite
             #region Nested types
 
             /// <summary>
-            /// Represents the property <see cref="IDependsOn"/> association.
+            /// Represents the property element in the dependency map.
             /// </summary>
             private class Entry : List<Entry>
             {
@@ -353,6 +440,26 @@ namespace Qube7.Composite
                 }
 
                 /// <summary>
+                /// Resolves the collection of dependent properties for the specified <see cref="Entry"/>.
+                /// </summary>
+                /// <param name="entry">The <see cref="Entry"/> to resolve.</param>
+                /// <param name="list">The collection of dependent properties.</param>
+                private static void Resolve(Entry entry, List<string> list)
+                {
+                    if (list.Contains(entry.Name))
+                    {
+                        return;
+                    }
+
+                    list.Add(entry.Name);
+
+                    for (int i = 0; i < entry.Count; i++)
+                    {
+                        Resolve(entry[i], list);
+                    }
+                }
+
+                /// <summary>
                 /// Resolves the collection of dependent properties of the associated property.
                 /// </summary>
                 /// <returns>The collection of dependent properties.</returns>
@@ -376,49 +483,29 @@ namespace Qube7.Composite
                     return null;
                 }
 
-                /// <summary>
-                /// Resolves the collection of dependent properties for the specified <see cref="Entry"/>.
-                /// </summary>
-                /// <param name="entry">The <see cref="Entry"/> to resolve.</param>
-                /// <param name="list">The collection of dependent properties.</param>
-                private void Resolve(Entry entry, List<string> list)
-                {
-                    if (list.Contains(entry.Name))
-                    {
-                        return;
-                    }
-
-                    list.Add(entry.Name);
-
-                    for (int i = 0; i < entry.Count; i++)
-                    {
-                        Resolve(entry[i], list);
-                    }
-                }
-
                 #endregion
             }
 
             /// <summary>
             /// Manages the property change notification of the <see cref="ObservableObject"/>.
             /// </summary>
-            private class PropertyChanged : INotification
+            private class NotifyChanged : IRaiseChanged
             {
                 #region Fields
 
                 /// <summary>
-                /// Represents the cached instance of the <see cref="PropertyChanged"/> class.
+                /// Represents the singleton instance of the <see cref="NotifyChanged"/> class.
                 /// </summary>
-                internal static readonly PropertyChanged Instance = new PropertyChanged();
+                internal static readonly NotifyChanged Instance = new NotifyChanged();
 
                 #endregion
 
                 #region Constructors
 
                 /// <summary>
-                /// Prevents a default instance of the <see cref="PropertyChanged"/> class from being created.
+                /// Prevents a default instance of the <see cref="NotifyChanged"/> class from being created.
                 /// </summary>
-                private PropertyChanged()
+                private NotifyChanged()
                 {
                 }
 
@@ -430,28 +517,178 @@ namespace Qube7.Composite
                 /// Raises the property change notification for the specified <see cref="ObservableObject"/>.
                 /// </summary>
                 /// <param name="observable">The target observable.</param>
-                /// <param name="e">The <see cref="PropertyChangedEventArgs"/> instance containing the event data.</param>
-                public void Raise(ObservableObject observable, PropertyChangedEventArgs e)
-                {
-                    ValidateProperty(observable, e.PropertyName);
-
-                    Event.Raise(observable.PropertyChanged, observable, e);
-                }
-
-                /// <summary>
-                /// Determines whether the specified object declares an instance property with the specified name.
-                /// </summary>
-                /// <param name="observable">The target observable.</param>
-                /// <param name="propertyName">The name of the property being tested.</param>
-                [Conditional("DEBUG")]
-                private static void ValidateProperty(ObservableObject observable, string propertyName)
+                /// <param name="propertyName">The name of the property that changed.</param>
+                public void Raise(ObservableObject observable, string propertyName)
                 {
                     if (string.IsNullOrEmpty(propertyName))
                     {
+                        observable.OnPropertyChanged(EventArgsCache.ObjectPropertyChanged);
+
                         return;
                     }
 
                     observable.ValidateProperty(propertyName);
+
+                    observable.OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+                }
+
+                #endregion
+            }
+
+            /// <summary>
+            /// Manages the property change notification of the <see cref="ObservableObject"/> that declares an indexer.
+            /// </summary>
+            private class IndexerNotifyChanged : IRaiseChanged
+            {
+                #region Fields
+
+                /// <summary>
+                /// Represents the instance of the <see cref="IndexerNotifyChanged"/> class for the default name of the indexer property.
+                /// </summary>
+                internal static readonly IndexerNotifyChanged Default = new IndexerNotifyChanged(IndexerName);
+
+                /// <summary>
+                /// The name of the indexer property.
+                /// </summary>
+                private readonly string indexerName;
+
+                #endregion
+
+                #region Constructors
+
+                /// <summary>
+                /// Initializes a new instance of the <see cref="IndexerNotifyChanged"/> class.
+                /// </summary>
+                /// <param name="indexerName">The name of the indexer property.</param>
+                internal IndexerNotifyChanged(string indexerName)
+                {
+                    this.indexerName = indexerName;
+                }
+
+                #endregion
+
+                #region Methods
+
+                /// <summary>
+                /// Raises the property change notification for the specified <see cref="ObservableObject"/>.
+                /// </summary>
+                /// <param name="observable">The target observable.</param>
+                /// <param name="propertyName">The name of the property that changed.</param>
+                public void Raise(ObservableObject observable, string propertyName)
+                {
+                    if (string.IsNullOrEmpty(propertyName))
+                    {
+                        observable.OnPropertyChanged(EventArgsCache.ObjectPropertyChanged);
+
+                        return;
+                    }
+
+                    if (propertyName == indexerName)
+                    {
+                        observable.OnPropertyChanged(EventArgsCache.IndexerPropertyChanged);
+
+                        return;
+                    }
+
+                    observable.ValidateProperty(propertyName);
+
+                    observable.OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+                }
+
+                #endregion
+            }
+
+            /// <summary>
+            /// Manages the property change notification of the <see cref="ObservableObject"/> that specifies property dependencies.
+            /// </summary>
+            private class MappedNotifyChanged : Dictionary<string, string[]>, IRaiseChanged
+            {
+                #region Methods
+
+                /// <summary>
+                /// Raises the property change notification for the specified <see cref="ObservableObject"/>.
+                /// </summary>
+                /// <param name="observable">The target observable.</param>
+                /// <param name="propertyName">The name of the property that changed.</param>
+                void IRaiseChanged.Raise(ObservableObject observable, string propertyName)
+                {
+                    if (string.IsNullOrEmpty(propertyName))
+                    {
+                        observable.OnPropertyChanged(EventArgsCache.ObjectPropertyChanged);
+
+                        return;
+                    }
+
+                    Raise(observable, propertyName);
+
+                    if (TryGetValue(propertyName, out string[] properties))
+                    {
+                        for (int i = 0; i < properties.Length; i++)
+                        {
+                            Raise(observable, properties[i]);
+                        }
+                    }
+                }
+
+                /// <summary>
+                /// Raises the property change notification for the specified <see cref="ObservableObject"/>.
+                /// </summary>
+                /// <param name="observable">The target observable.</param>
+                /// <param name="propertyName">The name of the property that changed.</param>
+                protected virtual void Raise(ObservableObject observable, string propertyName)
+                {
+                    observable.ValidateProperty(propertyName);
+
+                    observable.OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+                }
+
+                #endregion
+            }
+
+            /// <summary>
+            /// Manages the property change notification of the <see cref="ObservableObject"/> that declares an indexer and specifies property dependencies.
+            /// </summary>
+            private class IndexerMappedNotifyChanged : MappedNotifyChanged
+            {
+                #region Fields
+
+                /// <summary>
+                /// The name of the indexer property.
+                /// </summary>
+                private readonly string indexerName;
+
+                #endregion
+
+                #region Constructors
+
+                /// <summary>
+                /// Initializes a new instance of the <see cref="IndexerMappedNotifyChanged"/> class.
+                /// </summary>
+                /// <param name="indexerName">The name of the indexer property.</param>
+                internal IndexerMappedNotifyChanged(string indexerName)
+                {
+                    this.indexerName = indexerName;
+                }
+
+                #endregion
+
+                #region Methods
+
+                /// <summary>
+                /// Raises the property change notification for the specified <see cref="ObservableObject"/>.
+                /// </summary>
+                /// <param name="observable">The target observable.</param>
+                /// <param name="propertyName">The name of the property that changed.</param>
+                protected override void Raise(ObservableObject observable, string propertyName)
+                {
+                    if (propertyName == indexerName)
+                    {
+                        observable.OnPropertyChanged(EventArgsCache.IndexerPropertyChanged);
+
+                        return;
+                    }
+
+                    base.Raise(observable, propertyName);
                 }
 
                 #endregion

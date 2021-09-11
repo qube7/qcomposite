@@ -9,6 +9,23 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Version>2.2.0</Version>
+    <Authors>qube7</Authors>
+    <Description>Provides framework for developing rich client, composite applications.</Description>
+    <Copyright>Copyright © QUBE7 2021</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://www.qube7.com/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/qube7/qcomposite</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>Icon.png</PackageIcon>
+    <PackageTags>qube7;qcomposite;composite;desktop;mvvm;wpf;xaml;mef</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Properties\Icon.png" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
   </ItemGroup>

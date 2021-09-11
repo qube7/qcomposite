@@ -117,59 +117,44 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddingDuplicate" xml:space="preserve">
-    <value>An item with the same key has already been added.</value>
+  <data name="ArgumentEmpty" xml:space="preserve">
+    <value>Argument must contain at least one element.</value>
   </data>
   <data name="ArgumentEmptyString" xml:space="preserve">
     <value>Argument cannot be an empty string.</value>
   </data>
   <data name="ArgumentNegative" xml:space="preserve">
-    <value>Non negative number is required.</value>
+    <value>Argument must be non-negative.</value>
   </data>
   <data name="ArgumentNotAssignable" xml:space="preserve">
     <value>The '{0}' type does not inherit from the '{1}' type.</value>
   </data>
+  <data name="ArgumentNullElement" xml:space="preserve">
+    <value>Argument cannot contain a null element.</value>
+  </data>
+  <data name="ArgumentWhiteSpace" xml:space="preserve">
+    <value>Argument cannot consist entirely of white-space characters.</value>
+  </data>
   <data name="AttributeNotDefined" xml:space="preserve">
     <value>The '{0}' must be defined for the '{1}'.</value>
   </data>
-  <data name="CapacityOverflow" xml:space="preserve">
-    <value>Capacity overflowed and went negative.</value>
+  <data name="CountRangeArray" xml:space="preserve">
+    <value>Count must be positive and count must refer to a location within the array.</value>
   </data>
   <data name="CountRangeList" xml:space="preserve">
-    <value>Count must be positive and count must refer to a location within the collection.</value>
+    <value>Count must be positive and count must refer to a location within the list.</value>
   </data>
-  <data name="EnumeratorFailedVersion" xml:space="preserve">
-    <value>Collection was modified after the enumerator was instantiated.</value>
-  </data>
-  <data name="EnumeratorInvalidPosition" xml:space="preserve">
-    <value>Enumeration has either not started or has already finished.</value>
-  </data>
-  <data name="ExtensionCannotSet" xml:space="preserve">
-    <value>This collection does not support setting extensions by index.</value>
-  </data>
-  <data name="IndexGreaterEqualLength" xml:space="preserve">
-    <value>Index must be less than the length of the array.</value>
-  </data>
-  <data name="IndexGreaterLength" xml:space="preserve">
-    <value>Index cannot be larger than the length of the array.</value>
+  <data name="IndexRangeArray" xml:space="preserve">
+    <value>Index was out of range, must be non-negative and less than the size of the array.</value>
   </data>
   <data name="IndexRangeList" xml:space="preserve">
-    <value>Index was out of range, must be non-negative and less than the size of the collection.</value>
-  </data>
-  <data name="IndexRangeListInsert" xml:space="preserve">
-    <value>Index must be within the bounds of the list.</value>
+    <value>Index was out of range, must be non-negative and less than the size of the list.</value>
   </data>
   <data name="NotCancelable" xml:space="preserve">
     <value>The event cannot be canceled.</value>
   </data>
   <data name="NotOverridden" xml:space="preserve">
     <value>The '{0}' member must be overridden by a derived class.</value>
-  </data>
-  <data name="OffsetLengthInvalid" xml:space="preserve">
-    <value>Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.</value>
-  </data>
-  <data name="ReadOnlyCollection" xml:space="preserve">
-    <value>The underlying collection is read-only.</value>
   </data>
   <data name="ReturnsNull" xml:space="preserve">
     <value>The '{0}' must return a non-null value.</value>

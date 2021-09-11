@@ -42,16 +42,14 @@ namespace Qube7.Composite.Converters
         /// <returns><c>false</c> if <paramref name="value"/> is <c>true</c>; otherwise, <c>true</c>.</returns>
         public override object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool)
+            if (value is bool boolean)
             {
-                return (bool)value ? BooleanBox.False : BooleanBox.True;
+                return boolean ? BooleanBox.False : BooleanBox.True;
             }
 
-            if (value is bool? || value == null)
+            if (value == null)
             {
-                bool? nullable = (bool?)value;
-
-                return nullable.HasValue ? nullable.Value ? BooleanBox.False : BooleanBox.True : null;
+                return null;
             }
 
             return Binding.DoNothing;

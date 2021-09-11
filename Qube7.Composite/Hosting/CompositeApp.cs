@@ -5,7 +5,6 @@ using System.ComponentModel.Composition.Primitives;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using Qube7.ComponentModel;
 using Qube7.Composite.Presentation;
 
 namespace Qube7.Composite.Hosting
@@ -18,12 +17,7 @@ namespace Qube7.Composite.Hosting
         #region Fields
 
         /// <summary>
-        /// Specifies the contract name for a <see cref="ViewModel"/> representing the shell model.
-        /// </summary>
-        public const string ShellContractName = "Application/Shell";
-
-        /// <summary>
-        /// The location of the module discovery resource.
+        /// The location of the module iterator resource.
         /// </summary>
         private Uri modulesUri;
 
@@ -37,17 +31,15 @@ namespace Qube7.Composite.Hosting
         #region Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Uri"/> that represents the location of the <see cref="ModuleDiscovery"/> providing the available modules.
+        /// Gets or sets the <see cref="Uri"/> that represents the location of the <see cref="ModuleIterator"/> providing the available modules.
         /// </summary>
-        /// <value>The location of the module discovery resource.</value>
+        /// <value>The location of the module iterator resource.</value>
         public Uri ModulesUri
         {
             get { return modulesUri; }
             set
             {
                 VerifyAccess();
-
-                Requires.NotNull(value, nameof(value));
 
                 modulesUri = value;
             }
@@ -63,7 +55,7 @@ namespace Qube7.Composite.Hosting
         /// Gets the <see cref="ViewModel"/> representing the shell model.
         /// </summary>
         /// <value>The shell model.</value>
-        [Import(ShellContractName, RequiredCreationPolicy = CreationPolicy.Shared)]
+        [Import(ContractName.Shell, RequiredCreationPolicy = CreationPolicy.Shared)]
         public ViewModel Shell { get; private set; }
 
         #endregion
@@ -93,76 +85,32 @@ namespace Qube7.Composite.Hosting
             {
                 modules = new List<ModuleContext>(4);
 
-                if (modulesUri != null)
+                if (modulesUri != null && LoadComponent(modulesUri) is ModuleIterator iterator)
                 {
-                    ModuleDiscovery discovery = LoadComponent(modulesUri) as ModuleDiscovery;
-                    if (discovery != null)
-                    {
-                        try
-                        {
-                            modules.AddRange(discovery.OfType<ModuleContext>());
-                        }
-                        finally
-                        {
-                            Disposable.Dispose(discovery);
-                        }
-                    }
+                    modules.AddRange(iterator.OfType<ModuleContext>());
                 }
 
-                List<Task<Module>> tasks = new List<Task<Module>>();
-
-                foreach (ModuleContext context in modules)
-                {
-                    tasks.Add(Task.Run(() => Initialize(context)));
-                }
-
-                Initialize(this);
-
-                AppModule module = new AppModule(this);
-
-                Module.Execute(module);
-
-                while (tasks.Count > 0)
-                {
-                    int index = Task.WaitAny(tasks.ToArray());
-
-                    Module.Execute(tasks[index].Result);
-
-                    tasks.RemoveAt(index);
-                }
+                AppModule.Run(this);
             }
 
             base.OnStartup(e);
         }
 
         /// <summary>
-        /// Initializes the specified module context and returns the associated module object.
+        /// Initializes this instance of the composite application.
         /// </summary>
-        /// <param name="context">The module context to initialize.</param>
-        /// <returns>The associated module instance.</returns>
-        private static Module Initialize(ModuleContext context)
-        {
-            Initializable.Initialize(context);
-
-            return context.Module;
-        }
-
-        /// <summary>
-        /// Initializes the specified composite application.
-        /// </summary>
-        /// <param name="app">The application to initialize.</param>
-        private static void Initialize(CompositeApp app)
+        private void Initialize()
         {
             Resources resources = new Resources();
 
-            if (app.Resources == null)
+            if (Resources == null)
             {
-                app.Resources = resources;
+                Resources = resources;
 
                 return;
             }
 
-            app.Resources.MergedDictionaries.Add(resources);
+            Resources.MergedDictionaries.Add(resources);
         }
 
         #endregion
@@ -194,7 +142,7 @@ namespace Qube7.Composite.Hosting
             /// Initializes a new instance of the <see cref="AppModule"/> class.
             /// </summary>
             /// <param name="app">The underlying application.</param>
-            internal AppModule(CompositeApp app)
+            private AppModule(CompositeApp app)
             {
                 this.app = app;
 
@@ -213,13 +161,52 @@ namespace Qube7.Composite.Hosting
             #region Methods
 
             /// <summary>
-            /// Activates behavior of the current module instance.
+            /// Starts the specified composite application.
+            /// </summary>
+            /// <param name="app">The application to start.</param>
+            internal static void Run(CompositeApp app)
+            {
+                List<Task<Module>> tasks = new List<Task<Module>>();
+
+                foreach (ModuleContext context in app.modules)
+                {
+                    tasks.Add(Task.Run(() => context.Module));
+                }
+
+                AppModule module = new AppModule(app);
+
+                module.Initialize();
+
+                XContainer.Activate(module);
+
+                while (tasks.Count > 0)
+                {
+                    int index = Task.WaitAny(tasks.ToArray());
+
+                    XContainer.Activate(tasks[index].Result);
+
+                    tasks.RemoveAt(index);
+                }
+            }
+
+            /// <summary>
+            /// Initializes this instance of the module object.
+            /// </summary>
+            protected internal override void Initialize()
+            {
+                app.Initialize();
+            }
+
+            /// <summary>
+            /// Raises the <see cref="Controller.Activated"/> event.
             /// </summary>
             protected override void OnActivated()
             {
                 Container.Catalogs.Add(catalog);
 
                 Container.ComposeParts(app);
+
+                base.OnActivated();
             }
 
             #endregion

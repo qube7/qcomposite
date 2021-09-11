@@ -19,7 +19,7 @@ namespace Qube7.Composite.Design
         /// <summary>
         /// A value indicating whether the process is running in design mode.
         /// </summary>
-        private static readonly bool enabled;
+        private static readonly bool designMode;
 
         #endregion
 
@@ -31,7 +31,7 @@ namespace Qube7.Composite.Design
         /// <value><c>true</c> if the process is running in design mode; otherwise, <c>false</c>.</value>
         internal static bool DesignMode
         {
-            get { return enabled; }
+            get { return designMode; }
         }
 
         #endregion
@@ -43,7 +43,7 @@ namespace Qube7.Composite.Design
         /// </summary>
         static Designer()
         {
-            enabled = (bool)DependencyPropertyDescriptor.FromProperty(DesignerProperties.IsInDesignModeProperty, typeof(DependencyObject)).Metadata.DefaultValue;
+            designMode = (bool)DependencyPropertyDescriptor.FromProperty(DesignerProperties.IsInDesignModeProperty, typeof(DependencyObject)).Metadata.DefaultValue;
         }
 
         #endregion

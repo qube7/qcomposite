@@ -1,0 +1,75 @@
+﻿<Window x:Class="$safeprojectname$.Shell.ShellView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:q="http://qube7.com/composite/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:$safeprojectname$.Shell"
+        mc:Ignorable="d"
+        d:Class="{q:DesignClass local:ShellView}"
+        d:DataContext="{d:DesignInstance local:ShellViewModel, IsDesignTimeCreatable=True}"
+        DataContext="{Binding Shell, Source={x:Static Application.Current}, Mode=OneTime}"
+        Title="$safeprojectname$">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0"
+              Visibility="{Binding HasItems, RelativeSource={RelativeSource Self}, Converter={q:BooleanToVisibilityConverter}}">
+            <Menu.ItemsSource>
+                <Binding Path="Menu">
+                    <Binding.Converter>
+                        <q:CompositeValueConverter>
+                            <q:ItemsConverter ItemContainerStyle="{DynamicResource {x:Type MenuItem}}">
+                                <q:ItemsConverter.ItemTemplateSelector>
+                                    <q:ViewTemplateSelector TemplateName="Shell/Menu" />
+                                </q:ItemsConverter.ItemTemplateSelector>
+                            </q:ItemsConverter>
+                            <q:Grouping />
+                        </q:CompositeValueConverter>
+                    </Binding.Converter>
+                </Binding>
+            </Menu.ItemsSource>
+        </Menu>
+        <ToolBarTray Grid.Row="1">
+            <q:ToolBarSource.Source>
+                <Binding Path="ToolBar">
+                    <Binding.Converter>
+                        <q:ItemsConverter ItemContainerStyle="{DynamicResource {x:Type ToolBar}}">
+                            <q:ItemsConverter.ItemTemplateSelector>
+                                <q:ViewTemplateSelector TemplateName="Shell/ToolBar" />
+                            </q:ItemsConverter.ItemTemplateSelector>
+                        </q:ItemsConverter>
+                    </Binding.Converter>
+                </Binding>
+            </q:ToolBarSource.Source>
+        </ToolBarTray>
+        <ContentPresenter Grid.Row="2"
+                          Content="{Binding Content, NotifyOnTargetUpdated=True}">
+            <ContentPresenter.ContentTemplateSelector>
+                <q:ViewTemplateSelector />
+            </ContentPresenter.ContentTemplateSelector>
+            <ContentPresenter.RenderTransform>
+                <TranslateTransform x:Name="Translate" />
+            </ContentPresenter.RenderTransform>
+            <ContentPresenter.Triggers>
+                <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Translate" Storyboard.TargetProperty="X" Duration="0:0:0.4">
+                                <DiscreteDoubleKeyFrame KeyTime="0" Value="100" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0">
+                                    <EasingDoubleKeyFrame.EasingFunction>
+                                        <BackEase Amplitude="0.3" EasingMode="EaseOut" />
+                                    </EasingDoubleKeyFrame.EasingFunction>
+                                </EasingDoubleKeyFrame>
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </ContentPresenter.Triggers>
+        </ContentPresenter>
+    </Grid>
+</Window>

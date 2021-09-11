@@ -107,8 +107,7 @@ namespace Qube7.Composite.Converters
         /// <param name="e">The <see cref="DependencyPropertyChangedEventArgs"/> instance containing the event data.</param>
         private static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            Grouping grouping = d as Grouping;
-            if (grouping != null)
+            if (d is Grouping grouping)
             {
                 grouping.OnPropertyChanged(new PropertyChangedEventArgs(e.Property.Name));
             }
@@ -234,8 +233,7 @@ namespace Qube7.Composite.Converters
         /// <returns>The sequence whose elements are grouped and sorted.</returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            IEnumerable<DependencyObject> enumerable = value as IEnumerable<DependencyObject>;
-            if (enumerable != null)
+            if (value is IEnumerable<DependencyObject> enumerable)
             {
                 return new GroupingCollection(enumerable, this);
             }
@@ -363,8 +361,7 @@ namespace Qube7.Composite.Converters
 
                 PropertyChangedEvent.AddListener(grouping, propertyListener);
 
-                INotifyCollectionChanged collection = enumerable as INotifyCollectionChanged;
-                if (collection != null)
+                if (enumerable is INotifyCollectionChanged collection)
                 {
                     this.enumerable = enumerable;
 

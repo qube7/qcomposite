@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -204,7 +205,7 @@ namespace Qube7.Composite.Presentation
             {
                 if (template == null && viewType != null)
                 {
-                    template = DataTemplateHelper.CreateTemplate(viewType);
+                    template = TemplateFactory.CreateTemplate(viewType);
 
                     template.DataType = modelType;
 
@@ -319,26 +320,17 @@ namespace Qube7.Composite.Presentation
         /// Indicates that the value of the property is culture-sensitive.
         /// </summary>
         [AttributeUsage(AttributeTargets.Property, Inherited = false)]
-        protected sealed class LocalizedAttribute : Attribute, IDependsOn
+        protected sealed class LocalizedAttribute : DependsOnAttribute
         {
-            #region Fields
-
-            /// <summary>
-            /// The names of the related properties.
-            /// </summary>
-            private static readonly string[] properties = new string[] { nameof(Culture) };
-
-            #endregion
-
             #region Properties
 
             /// <summary>
             /// Gets the names of the related properties declared in this <see cref="LocalizedAttribute"/>.
             /// </summary>
-            /// <value>The names of the related properties.</value>
-            string[] IDependsOn.Properties
+            /// <value>The name of the <see cref="Culture"/> property.</value>
+            public override IEnumerable<string> Properties
             {
-                get { return properties; }
+                get { yield return nameof(Culture); }
             }
 
             #endregion

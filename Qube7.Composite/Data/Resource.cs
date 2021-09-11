@@ -52,6 +52,12 @@ namespace Qube7.Composite.Data
             }
         }
 
+        /// <summary>
+        /// Gets or sets a string that specifies how to format the resource if it displays the bound value as a string.
+        /// </summary>
+        /// <value>A string that specifies how to format the resource if it displays the bound value as a string.</value>
+        public string StringFormat { get; set; }
+
         #endregion
 
         #region Constructors
@@ -98,7 +104,7 @@ namespace Qube7.Composite.Data
                 {
                     ResourceProvider provider = ResourceProvider.FromType(source);
 
-                    Binding binding = new Binding(string.Format(Indexer, name)) { Source = provider, Mode = BindingMode.OneWay };
+                    Binding binding = new Binding(string.Format(Indexer, name)) { Source = provider, Mode = BindingMode.OneWay, StringFormat = StringFormat };
 
                     return binding.ProvideValue(serviceProvider);
                 }
@@ -122,9 +128,12 @@ namespace Qube7.Composite.Data
                 {
                     if (Designer.DesignMode)
                     {
-                        DependencyObject element = root as DependencyObject;
+                        if (root is DependencyObject element)
+                        {
+                            return Designer.GetDesignType(element);
+                        }
 
-                        return element != null ? Designer.GetDesignType(element) : null;
+                        return null;
                     }
 
                     return root.GetType();
@@ -154,6 +163,15 @@ namespace Qube7.Composite.Data
                 builder.Append(nameof(SourceType));
                 builder.Append("=");
                 builder.Append(source.Name);
+            }
+
+            string format = StringFormat;
+            if (format != null)
+            {
+                builder.Append(", ");
+                builder.Append(nameof(StringFormat));
+                builder.Append("=");
+                builder.Append(format);
             }
 
             builder.Append("}");
